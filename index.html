@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deutsch A2 Trainer</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary-blue: #0052CC;    /* Azul oscuro de la cabecera y módulos 1 y 4 */
+      --amber:        #F2A738;    /* Amarillo mostaza de módulo 2 */
+      --coral-red:    #D45A56;    /* Rojo coral de módulo 3 */
+      --light-bg:     #FFF5CC;    /* Fondo claro detrás de los módulos */
+      --white:        #FFFFFF;
+      --text-dark:    #222222;
+      --transition:   0.3s ease;
+      --shadow:       rgba(0,0,0,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text-dark);
+      background: var(--light-bg);
+      overflow-x: hidden;
+    }
+    /* HEADER */
+    header {
+      position: sticky; top: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--primary-blue);
+      color: var(--white);
+      padding: .8rem 2rem;
+      z-index: 10;
+      box-shadow: 0 2px 6px var(--shadow);
+    }
+    header .logo {
+      display: flex; align-items: center; gap: .6rem;
+    }
+    header .logo img { height: 32px; }
+    header nav a {
+      margin-left: 1.5rem;
+      text-decoration: none;
+      color: var(--white);
+      font-weight: 600;
+      transition: color var(--transition);
+    }
+    header nav a:hover { color: var(--amber); }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      background: url('fondo.png') center/cover no-repeat;
+      height: 55vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.4);
+    }
+    .hero-content {
+      position: relative;
+      color: var(--white);
+      max-width: 800px;
+      padding: 0 1rem;
+      animation: fadeInUp 1s ease-out both;
+    }
+    .hero-content h1 {
+      font-size: 3rem; margin-bottom: .5rem;
+      text-shadow: 2px 2px 10px var(--shadow);
+    }
+    .hero-content p {
+      font-size: 1.2rem; opacity: .9;
+      animation: fadeInUp 1s ease-out .3s both;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* MÓDULOS */
+    main {
+      padding: 3rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto 4rem;
+    }
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
+      gap: 2rem;
+    }
+    .card {
+      border-radius: 16px;
+      padding: 2rem 1.5rem 3rem;
+      position: relative;
+      box-shadow: 0 8px 20px var(--shadow);
+      transform-style: preserve-3d;
+      transition: transform var(--transition), box-shadow var(--transition);
+      color: var(--white);
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: perspective(600px) rotateX(3deg) rotateY(-3deg) translateY(-8px);
+      box-shadow: 0 12px 30px var(--shadow);
+    }
+
+    /* Fondos específicos por módulo */
+    .card.vocab { background: var(--primary-blue); }
+    .card.grammar { background: var(--amber); }
+    .card.test { background: var(--coral-red); }
+    .card.sim { background: var(--primary-blue); }
+
+    .card .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      transition: transform var(--transition), color var(--transition);
+    }
+    .card:hover .icon {
+      transform: scale(1.2) rotate(15deg);
+    }
+    .card h3 {
+      font-size: 1.5rem; margin-bottom: .6rem;
+    }
+    .card p {
+      font-size: 1rem; margin-bottom: 1.4rem;
+      line-height: 1.4;
+      color: rgba(255,255,255,0.85);
+    }
+    .card .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--white);
+      color: var(--text-dark);
+      padding: .6rem 1.2rem;
+      border: none; border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px var(--shadow);
+      transition: transform var(--transition), background var(--transition);
+    }
+    .card .btn .fa-arrow-right {
+      transition: transform var(--transition);
+    }
+    .card .btn:hover {
+      background: var(--text-dark);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+    .card .btn:hover .fa-arrow-right {
+      transform: translateX(4px);
+    }
+
+    /* RESPONSIVE */
+    @media(max-width: 600px) {
+      .hero-content h1 { font-size: 2.2rem; }
+      .hero-content p  { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="header.png" alt="DE">
+      <span>Deutsch A2 Trainer</span>
+    </div>
+    <nav>
+      <a href="#">Startseite</a>
+      <a href="#">Vokabeln</a>
+      <a href="#">Übungen</a>
+      <a href="#">Tests</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Herzliich willkommen!</h1>
+      <p>Bereite dich spielerisch auf deine Deutsch A2 Prüfung vor – mit Bildern, Vokabeln, Übungen und Simulationstests.</p>
+    </div>
+  </section>
+
+  <main>
+    <div class="modules">
+      <!-- Vokabeln -->
+      <div class="card vocab">
+        <i class="fa-solid fa-language icon"></i>
+        <h3>Vokabeln lernen</h3>
+        <p>Merke dir wichtige Wörter zu Alltag, Reisen, Beruf und Freizeit.</p>
+        <button class="btn">
+          Los geht’s <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+      <!-- Grammatik -->
+      <div class="card grammar">
+        <i class="fa-solid fa-book-open icon"></i>
+        <h3>Grammatik üben</h3>
+        <p>Trainiere Zeitformen, Fälle, Satzbau und Präpositionen gezielt.</p>
+        <button class="btn">
+          Los geht’s <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+      <!-- Übungstests -->
+      <div class="card test">
+        <i class="fa-solid fa-clipboard-list icon"></i>
+        <h3>Übungstests</h3>
+        <p>Teste dein Wissen in kurzen Übungen mit sofortigem Feedback.</p>
+        <button class="btn">
+          Los geht’s <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+      <!-- Simulationsprüfung -->
+      <div class="card sim">
+        <i class="fa-solid fa-clock icon"></i>
+        <h3>Simulationsprüfung</h3>
+        <p>Erlebe das Prüfungsgefühl im realistischen Testmodus unter Zeitdruck.</p>
+        <button class="btn">
+          Los geht’s <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>
