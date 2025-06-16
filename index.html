@@ -3,55 +3,116 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Deutsch A2 Trainer</title>
-  <!-- Font Awesome -->
+  <title>Deutsch A2 Trainer – Abenteuer Lernen!</title>
+  <!-- Font Awesome für Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
+    /* ===== PALETA ===== */
     :root {
-      --primary-blue: #0052CC;    /* Azul oscuro de la cabecera y módulos 1 y 4 */
-      --amber:        #F2A738;    /* Amarillo mostaza de módulo 2 */
-      --coral-red:    #D45A56;    /* Rojo coral de módulo 3 */
-      --light-bg:     #FFF5CC;    /* Fondo claro detrás de los módulos */
-      --white:        #FFFFFF;
-      --text-dark:    #222222;
-      --transition:   0.3s ease;
-      --shadow:       rgba(0,0,0,0.15);
+      --blue:     #0052CC;
+      --amber:    #F2A738;
+      --coral:    #D45A56;
+      --sky:      #87CEFA;
+      --grass:    #7FC97F;
+      --white:    #FFFFFF;
+      --text:     #222222;
+      --shadow:   rgba(0,0,0,0.2);
+      --anim-time: 4s;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Segoe UI', sans-serif;
-      color: var(--text-dark);
-      background: var(--light-bg);
+      background: linear-gradient(180deg, var(--sky) 0%, #FFF5CC 80%);
+      color: var(--text);
       overflow-x: hidden;
     }
-    /* HEADER */
+    /* ===== HEADER ===== */
     header {
       position: sticky; top: 0;
       display: flex; align-items: center; justify-content: space-between;
-      background: var(--primary-blue);
+      background: linear-gradient(135deg, var(--blue), var(--coral));
       color: var(--white);
-      padding: .8rem 2rem;
-      z-index: 10;
-      box-shadow: 0 2px 6px var(--shadow);
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 12px var(--shadow);
+      z-index: 100;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.15), transparent 60%);
+      animation: glow 6s infinite alternate;
+    }
+    @keyframes glow {
+      from { opacity: 0.3; }
+      to   { opacity: 0.6; }
     }
     header .logo {
-      display: flex; align-items: center; gap: .6rem;
+      display: flex; align-items: center; gap: .5rem;
+      z-index: 1;
+      animation: logoBounce 2s infinite;
     }
-    header .logo img { height: 32px; }
-    header nav a {
-      margin-left: 1.5rem;
+    @keyframes logoBounce {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    header .logo img { height: 40px; }
+    header .logo span {
+      font-size: 1.6rem; font-weight: 700;
+      text-shadow: 1px 1px 4px var(--shadow);
+    }
+    nav {
+      display: flex; align-items: center; gap: 1.5rem;
+      z-index: 1;
+    }
+    nav a {
+      position: relative;
       text-decoration: none;
       color: var(--white);
       font-weight: 600;
-      transition: color var(--transition);
+      padding: .5rem;
+      transition: color .3s;
     }
-    header nav a:hover { color: var(--amber); }
-
-    /* HERO */
+    nav a::after {
+      content: '';
+      position: absolute; left: 0; bottom: -4px;
+      width: 0; height: 3px;
+      background: var(--amber);
+      transition: width .3s;
+    }
+    nav a:hover {
+      color: var(--amber);
+    }
+    nav a:hover::after {
+      width: 100%;
+    }
+    .menu-toggle {
+      display: none;
+      z-index: 2;
+    }
+    .menu-toggle span {
+      display: block; width: 28px; height: 3px; margin: 5px 0;
+      background: var(--white);
+      transition: transform .3s, opacity .3s;
+    }
+    /* Formas decorativas en header */
+    .shape-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      animation: floatSlow 10s infinite;
+    }
+    .shape-circle.one { width: 80px; height: 80px; top: -20px; right: 100px; }
+    .shape-circle.two { width: 50px; height: 50px; bottom: 10px; left: 150px; animation-delay: 2s; }
+    @keyframes floatSlow {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+      100% { transform: translateY(0); }
+    }
+    /* ===== HERO ===== */
     .hero {
       position: relative;
-      background: url('fondo.png') center/cover no-repeat;
-      height: 55vh;
+      height: 60vh;
       display: flex; align-items: center; justify-content: center;
       text-align: center;
       overflow: hidden;
@@ -59,13 +120,28 @@
     .hero::before {
       content: '';
       position: absolute; inset: 0;
-      background: rgba(0,0,0,0.4);
+      background: url('fondo.png') center/cover no-repeat;
+      filter: brightness(0.8);
+    }
+    .cloud {
+      position: absolute;
+      background: url('https://svgshare.com/i/XnN.svg') no-repeat center/contain;
+      width: 200px; height: 80px;
+      opacity: .7;
+      animation: float  var(--anim-time) ease-in-out infinite;
+    }
+    .cloud:nth-child(1) { top: 20%; left: -10%; animation-delay: 0s; }
+    .cloud:nth-child(2) { top: 40%; left: -15%; animation-delay: 1.5s; width: 150px; height: 60px; }
+    .cloud:nth-child(3) { top: 10%; left: 100%; animation-delay: 3s; }
+    @keyframes float {
+      0%   { transform: translateX(0) translateY(0); }
+      50%  { transform: translateX(120vw) translateY(10px); }
+      100% { transform: translateX(0) translateY(0); }
     }
     .hero-content {
-      position: relative;
+      position: relative; z-index: 10;
       color: var(--white);
-      max-width: 800px;
-      padding: 0 1rem;
+      max-width: 800px; padding: 0 1rem;
       animation: fadeInUp 1s ease-out both;
     }
     .hero-content h1 {
@@ -80,92 +156,40 @@
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
-    /* MÓDULOS */
-    main {
-      padding: 3rem 1rem;
-      max-width: 1200px;
-      margin: 0 auto 4rem;
-    }
-    .modules {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px,1fr));
-      gap: 2rem;
-    }
+    /* ===== MÓDULOS ===== */
+    main { padding: 4rem 1rem; max-width: 1200px; margin: 0 auto 4rem; }
+    .modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 2.5rem; }
     .card {
-      border-radius: 16px;
-      padding: 2rem 1.5rem 3rem;
-      position: relative;
-      box-shadow: 0 8px 20px var(--shadow);
-      transform-style: preserve-3d;
-      transition: transform var(--transition), box-shadow var(--transition);
-      color: var(--white);
-      overflow: hidden;
+      position: relative; background: var(--white);
+      border-radius: 20px; padding: 2rem 1rem 3rem;
+      box-shadow: 0 8px 24px var(--shadow); overflow: hidden;
+      transition: transform .3s, box-shadow .3s; cursor:pointer;
     }
-    .card:hover {
-      transform: perspective(600px) rotateX(3deg) rotateY(-3deg) translateY(-8px);
-      box-shadow: 0 12px 30px var(--shadow);
-    }
-
-    /* Fondos específicos por módulo */
-    .card.vocab { background: var(--primary-blue); }
-    .card.grammar { background: var(--amber); }
-    .card.test { background: var(--coral-red); }
-    .card.sim { background: var(--primary-blue); }
-
-    .card .icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      transition: transform var(--transition), color var(--transition);
-    }
-    .card:hover .icon {
-      transform: scale(1.2) rotate(15deg);
-    }
-    .card h3 {
-      font-size: 1.5rem; margin-bottom: .6rem;
-    }
-    .card p {
-      font-size: 1rem; margin-bottom: 1.4rem;
-      line-height: 1.4;
-      color: rgba(255,255,255,0.85);
-    }
-    .card .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      background: var(--white);
-      color: var(--text-dark);
-      padding: .6rem 1.2rem;
-      border: none; border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 12px var(--shadow);
-      transition: transform var(--transition), background var(--transition);
-    }
-    .card .btn .fa-arrow-right {
-      transition: transform var(--transition);
-    }
-    .card .btn:hover {
-      background: var(--text-dark);
-      color: var(--white);
-      transform: translateY(-2px);
-    }
-    .card .btn:hover .fa-arrow-right {
-      transform: translateX(4px);
-    }
-
-    /* RESPONSIVE */
-    @media(max-width: 600px) {
-      .hero-content h1 { font-size: 2.2rem; }
-      .hero-content p  { font-size: 1rem; }
-    }
+    .card:hover { transform: translateY(-8px) scale(1.02); box-shadow:0 12px 32px var(--shadow);}    
+    .card::before,.card::after { content:''; position:absolute; border-radius:50%; opacity:.15; }
+    .card::before { width:200px;height:200px;top:-50px;right:-50px;background:var(--blue);transform:rotate(45deg);}    
+    .card::after  { width:150px;height:150px;bottom:-40px;left:-60px;background:var(--grass);}    
+    .card.vocab { background: var(--blue); color: var(--white);}    
+    .card.grammar{ background: var(--amber); color: var(--text);}    
+    .card.test   { background: var(--coral); color: var(--white);}    
+    .card.sim    { background: var(--blue); color: var(--white);}    
+    .card .icon  { font-size:3.5rem;margin-bottom:1rem;transition:transform .3s;}    
+    .card:hover .icon { transform:rotate(20deg) scale(1.1);}    
+    .card h3     { font-size:1.6rem;margin-bottom:.6rem;text-shadow:1px 1px 4px var(--shadow);}    
+    .card p      { font-size:1rem;margin-bottom:1.5rem;line-height:1.5; }    
+    .card .btn   { display:inline-flex;align-items:center;gap:.5rem;background:var(--grass);color:var(--text);padding:.6rem 1.2rem;border:none;border-radius:12px;font-weight:700;box-shadow:0 4px 12px var(--shadow);transition:transform .3s,background .3s;}    
+    .card .btn:hover { transform:translateY(-2px);background:var(--coral);color:var(--white);}    
+    .card .btn .fa-arrow-right { transition:transform .3s; }    
+    .card .btn:hover .fa-arrow-right { transform:translateX(4px);}    
+    @media(max-width:600px){ .hero-content h1{font-size:2.2rem;} .hero-content p{font-size:1rem;} }
   </style>
 </head>
 <body>
-
   <header>
+    <div class="shape-circle one"></div>
+    <div class="shape-circle two"></div>
     <div class="logo">
-      <img src="header.png" alt="DE">
+      <img src="header.png" alt="🇩🇪" />
       <span>Deutsch A2 Trainer</span>
     </div>
     <nav>
@@ -174,55 +198,48 @@
       <a href="#">Übungen</a>
       <a href="#">Tests</a>
     </nav>
+    <div class="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
   </header>
-
   <section class="hero">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
     <div class="hero-content">
       <h1>Herzliich willkommen!</h1>
-      <p>Bereite dich spielerisch auf deine Deutsch A2 Prüfung vor – mit Bildern, Vokabeln, Übungen und Simulationstests.</p>
+      <p>Bereite dich spielerisch auf deine Deutsch A2 Prüfung vor – mit bunten Bildern, Vokabeln, Übungen und Simulationstests.</p>
     </div>
   </section>
-
   <main>
     <div class="modules">
-      <!-- Vokabeln -->
       <div class="card vocab">
         <i class="fa-solid fa-language icon"></i>
         <h3>Vokabeln lernen</h3>
-        <p>Merke dir wichtige Wörter zu Alltag, Reisen, Beruf und Freizeit.</p>
-        <button class="btn">
-          Los geht’s <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <p>Entdecke neue Wörter mit bunten Bildern und Spielen.</p>
+        <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
       </div>
-      <!-- Grammatik -->
       <div class="card grammar">
         <i class="fa-solid fa-book-open icon"></i>
         <h3>Grammatik üben</h3>
-        <p>Trainiere Zeitformen, Fälle, Satzbau und Präpositionen gezielt.</p>
-        <button class="btn">
-          Los geht’s <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <p>Lerne Zeiten, Fälle und Präpositionen durch interaktive Rätsel.</p>
+        <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
       </div>
-      <!-- Übungstests -->
       <div class="card test">
         <i class="fa-solid fa-clipboard-list icon"></i>
         <h3>Übungstests</h3>
-        <p>Teste dein Wissen in kurzen Übungen mit sofortigem Feedback.</p>
-        <button class="btn">
-          Los geht’s <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <p>Teste dein Wissen in kurzen Quizzes mit Echtzeit-Feedback.</p>
+        <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
       </div>
-      <!-- Simulationsprüfung -->
       <div class="card sim">
-        <i class="fa-solid fa-clock icon"></i>
+        <i class="fa-solid fa-stopwatch icon"></i>
         <h3>Simulationsprüfung</h3>
         <p>Erlebe das Prüfungsgefühl im realistischen Testmodus unter Zeitdruck.</p>
-        <button class="btn">
-          Los geht’s <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </div>
   </main>
-
 </body>
 </html>
