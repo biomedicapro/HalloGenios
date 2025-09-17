@@ -266,58 +266,530 @@
     </nav>
   </header>
 
-  <!-- HOME -->
-  <section id="home">
-    <div class="hero">
-      <div class="cloud"></div>
-      <div class="cloud"></div>
-      <div class="cloud"></div>
-      <div class="hero-content">
-        <h1>Herzlich willkommen auf unserer Webseite!</h1>
-        <p>Diese Seite ist für Schüler gedacht, die sich spielerisch auf die A2-Prüfung in Deutsch vorbereiten möchten. Hier kannst du neues Vokabular mit Bildern lernen, dein Gedächtnis trainieren und mit Übungstests dein Wissen testen. Viel Spaß beim Lernen!</p>
+<!-- HOME (MEJORADO PRO) -->
+<section id="home">
+  <style>
+    /* ====== Estilos específicos de HOME + mejoras del header para móviles ====== */
+    /* Header responsive y sin solapes */
+    header{ position: sticky; top: 0; }
+    header.shrink{ padding:.6rem 1.2rem!important; transition: padding .25s ease; }
+    header .menu-toggle{ display:none; cursor:pointer; }
+    header .menu-toggle span{ border-radius:2px; }
+    header nav{ display:flex; gap:1.2rem; align-items:center; }
+
+    /* Drawer móvil + backdrop para evitar solapes y permitir scroll lock */
+    @media (max-width: 900px){
+      header .menu-toggle{ display:block; z-index:1001; }
+      header nav{
+        position: fixed; top:0; right:0; height:100vh; width:min(78vw, 320px);
+        flex-direction:column; background:linear-gradient(135deg,var(--blue),var(--coral));
+        padding: 80px 1rem 1rem; transform: translateX(100%); transition: transform .3s ease;
+        box-shadow: -8px 0 24px var(--shadow); z-index:1002;
+      }
+      header nav.open{ transform: translateX(0); }
+      header nav a{ padding:.8rem 0; font-size:1.05rem; width:100%; text-align:left; }
+      .nav-backdrop{
+        position: fixed; inset:0; background: rgba(0,0,0,.35); backdrop-filter: blur(2px);
+        opacity:0; pointer-events:none; transition: opacity .25s ease; z-index:1000;
+      }
+      .nav-backdrop.show{ opacity:1; pointer-events:auto; }
+      body.noscroll{ overflow:hidden; }
+    }
+
+    /* ====== HERO mejorado (sin solapes en móvil) ====== */
+    #home .hero{
+      position:relative; min-height: clamp(58vh, 70vh, 82vh);
+      display:grid; place-items:center; padding: 2.4rem 1rem 3.2rem; isolation:isolate;
+    }
+    #home .hero::before{
+      content:''; position:absolute; inset:0;
+      background: url('fondo.png') center/cover no-repeat; filter: brightness(.9);
+      z-index:-3;
+    }
+    #home .hero::after{
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(0,0,0,.05) 40%, rgba(0,0,0,.2) 100%);
+      z-index:-2;
+    }
+    /* Nubes al fondo en móvil para evitar solapes */
+    .cloud{ z-index:-1; opacity:.5; pointer-events:none; }
+    @media (max-width:600px){
+      .cloud{ transform: scale(.8); opacity:.35; }
+    }
+
+    .hero-wrap{
+      width:min(1100px,96%); display:grid; grid-template-columns: 1.1fr .9fr; gap: clamp(1rem, 2.2vw, 2rem);
+      align-items:center;
+    }
+    @media (max-width: 900px){
+      .hero-wrap{ grid-template-columns:1fr; text-align:center; gap: 1.2rem; }
+    }
+    .hero-copy h1{
+      color:#fff; text-shadow:0 3px 14px rgba(0,0,0,.35);
+      font-size: clamp(2rem, 4.2vw, 3.2rem); line-height:1.1; margin-bottom:.65rem;
+    }
+    .hero-copy p{
+      color:#fff; opacity:.97; font-size: clamp(1rem, 1.6vw, 1.2rem);
+      background: rgba(0,0,0,.28); display:inline-block; padding:.7rem .9rem; border-radius:14px;
+      max-width: 48ch;
+    }
+    @media (max-width: 900px){ .hero-copy p{ max-width: 100%; } }
+    .cta-row{ display:flex; gap:.7rem; flex-wrap:wrap; margin-top:1.1rem; }
+    .btn-cta{
+      display:inline-flex; align-items:center; gap:.5rem; border:none; cursor:pointer;
+      background: var(--amber); color:#000; font-weight:800; padding:.8rem 1.1rem; border-radius: 12px;
+      box-shadow:0 8px 24px var(--shadow);
+    }
+    .btn-ghost-white{
+      display:inline-flex; align-items:center; gap:.5rem; border:2px solid #fff; color:#fff; background:transparent;
+      font-weight:800; padding:.7rem 1.05rem; border-radius:12px; backdrop-filter: blur(2px);
+    }
+    .hero-media{
+      display:grid; gap:.8rem; grid-template-columns: repeat(2,1fr); align-content:start;
+    }
+    @media (max-width:600px){ .hero-media{ grid-template-columns: 1fr; } }
+    .h-card{
+      background: rgba(255,255,255,.95); border-radius:16px; padding: .95rem; box-shadow:0 8px 24px var(--shadow);
+      display:flex; flex-direction:column; gap:.35rem; min-height: 120px;
+    }
+    .h-card i{ font-size:1.7rem; color:var(--coral); }
+    .h-card .kpi{ font-size:1.45rem; font-weight:900; color:var(--blue); }
+    .h-img{
+      grid-column: span 2; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px var(--shadow);
+    }
+    .h-img img{ width:100%; height: 230px; object-fit:cover; display:block; }
+    @media (max-width:900px){ .h-img{ grid-column:auto; } .h-img img{ height: 190px; } }
+
+    /* ====== Módulos destacados (tarjetas grandes) ====== */
+    .modules-wrap{ margin:-2.2rem auto 0; width:min(1200px,96%); position:relative; z-index:2; }
+    .modules-grid{ display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); }
+    .mcard{
+      position:relative; border-radius:18px; padding: 1.1rem 1rem 1.2rem; overflow:hidden;
+      background:#fff; box-shadow:0 10px 28px var(--shadow); border:2px solid rgba(0,0,0,.06);
+      transition: transform .18s ease, box-shadow .18s ease; cursor:pointer;
+      display:flex; flex-direction:column; justify-content:space-between;
+      min-height: 184px;
+    }
+    .mcard:hover{ transform: translateY(-4px); box-shadow:0 16px 32px var(--shadow); }
+    .mcard .top{ display:flex; align-items:center; gap:.7rem; margin-bottom:.35rem; }
+    .mcard .top i{ font-size:1.6rem; }
+    .mcard h3{ margin:0; }
+    .mcard p{ margin:.3rem 0 .7rem; min-height:48px; }
+    .pillset{ display:flex; gap:.35rem; flex-wrap:wrap; margin:.15rem 0 .6rem; }
+    .pill{ background:#f2f7ff; color:#17438c; border:1px solid #cfe0ff; padding:.15rem .5rem; font-size:.8rem; border-radius:999px; }
+    .mcard .go{ align-self:flex-start; display:inline-flex; align-items:center; gap:.45rem; font-weight:800; background:var(--grass); border:none; padding:.5rem .8rem; border-radius:12px; }
+    .ribbon{
+      position:absolute; top:10px; right:-36px; transform: rotate(20deg);
+      background: var(--amber); color:#000; font-weight:900; padding:.25rem 1.1rem; box-shadow:0 6px 20px var(--shadow);
+    }
+
+    /* ====== Sección: Ruta de aprendizaje ====== */
+    .section-title{ width:min(1100px,96%); margin: 1.8rem auto .8rem; display:flex; align-items:center; gap:.5rem; }
+    .section-title i{ color:var(--blue); }
+    .roadmap{ width:min(1100px,96%); margin: .6rem auto 0; display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); }
+    .stage{
+      background:#fff; border-radius:16px; border:2px solid rgba(0,0,0,.06); box-shadow:0 8px 24px var(--shadow);
+      padding:1rem; display:flex; flex-direction:column; gap:.35rem;
+    }
+    .stage .hdr{ display:flex; align-items:center; gap:.6rem; }
+    .stage .hdr i{ color:var(--blue); }
+    .stage ul{ margin:.3rem 0 0 1rem; padding:0; }
+    .stage li{ margin:.2rem 0; }
+
+    /* ====== Cómo funciona (imagen pública corregida) ====== */
+    .how{ width:min(1100px,96%); margin: 2.2rem auto 0; display:grid; gap:1rem; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 900px){ .how{ grid-template-columns: 1fr; } }
+    .how .panel{ background:#fff; border-radius:16px; padding:1rem; box-shadow:0 8px 24px var(--shadow); border:2px solid rgba(0,0,0,.06); }
+    .steps{ display:grid; gap:.7rem; }
+    .step{ display:grid; grid-template-columns: 44px 1fr; gap:.6rem; align-items:start; background:#f7fbff; border:1px dashed var(--blue); padding:.6rem .7rem; border-radius:12px; }
+    .step i{ font-size:1.3rem; color:var(--blue); display:grid; place-items:center; height:44px; width:44px; background:#fff; border-radius:10px; }
+    .how img{ width:100%; border-radius:14px; object-fit:cover; height:260px; display:block; }
+
+    /* ====== Beneficios / Metriken ====== */
+    .benefits{ width:min(1100px,96%); margin: 2rem auto 0; display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); }
+    .benefit{ background:#fff; border-radius:14px; padding:.95rem; box-shadow:0 8px 24px var(--shadow); border:2px solid rgba(0,0,0,.05); }
+    .benefit i{ font-size:1.6rem; color:var(--coral); }
+
+    .metrics{ width:min(1100px,96%); margin:1rem auto 0; display:grid; gap:.8rem; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); }
+    .metric{ background:#fff; border:2px solid rgba(0,0,0,.06); border-radius:12px; box-shadow:0 6px 18px var(--shadow); padding:.9rem; text-align:center; }
+    .metric .num{ font-weight:900; font-size:1.6rem; color:var(--blue); }
+
+    /* ====== Testimonios (scroll-snap sin solapes) ====== */
+    .testimonials{ width:min(1100px,96%); margin: 1.6rem auto 0; overflow:auto; display:flex; gap:.8rem; scroll-snap-type: x mandatory; padding-bottom:.6rem; }
+    .tcard{
+      min-width: clamp(260px, 48%, 520px); background:#fff; border-radius:16px; border:2px solid rgba(0,0,0,.06);
+      box-shadow:0 10px 26px var(--shadow); padding:1rem; scroll-snap-align:center;
+      display:flex; gap:.7rem;
+    }
+    .tcard i{ font-size:2rem; color:var(--amber); flex:0 0 auto; }
+    .tcard p{ margin:0; }
+
+    /* ====== Para profes y familias ====== */
+    .for-all{ width:min(1100px,96%); margin: 2rem auto 0; display:grid; gap:1rem; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 900px){ .for-all{ grid-template-columns:1fr; } }
+    .callout{
+      background:#fff; border-radius:16px; padding:1rem; border:2px solid rgba(0,0,0,.06); box-shadow:0 8px 24px var(--shadow);
+    }
+    .callout h4{ margin:.2rem 0 .5rem; display:flex; gap:.5rem; align-items:center; }
+    .callout ul{ margin:.3rem 0 0 1rem; }
+
+    /* ====== FAQ / Footer ====== */
+    .faq{ width:min(900px,96%); margin: 2rem auto; }
+    .faq details{ background:#fff; border-radius:12px; padding:.75rem .9rem; box-shadow: 0 6px 16px var(--shadow); border:2px solid rgba(0,0,0,.06); margin:.6rem 0; }
+    .faq summary{ cursor:pointer; font-weight:800; display:flex; align-items:center; gap:.5rem; }
+    .faq summary i{ color:var(--blue); }
+
+    .site-footer{ margin-top: 2rem; background: linear-gradient(135deg, var(--blue), var(--coral)); color:#fff; padding: 1.2rem 1rem; }
+    .foot-wrap{ width:min(1100px,96%); margin: 0 auto; display:grid; gap:1rem; grid-template-columns: 1.2fr .8fr .8fr; }
+    .foot-col h4{ margin:0 0 .4rem; }
+    .foot-col a{ color:#fff; opacity:.95; text-decoration:none; }
+    .foot-social{ display:flex; gap:.6rem; margin-top:.4rem; }
+    .foot-social i{ font-size:1.3rem; }
+    @media (max-width: 900px){ .foot-wrap{ grid-template-columns:1fr; text-align:center; } .foot-social{ justify-content:center; } }
+
+    /* Utilidades locales */
+    .kicker{ display:inline-flex; align-items:center; gap:.4rem; background:rgba(255,255,255,.92); color:#000; padding:.35rem .6rem; border-radius: 999px; font-weight:800; }
+  </style>
+
+  <!-- HERO -->
+  <div class="hero">
+    <!-- nubes (se reubican detrás en móvil) -->
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+
+    <div class="hero-wrap">
+      <div class="hero-copy">
+        <span class="kicker"><i class="fa-solid fa-graduation-cap"></i> HalloGenios · A2</span>
+        <h1>¡Aprende alemán jugando y <em>aprueba</em> tu examen A2!</h1>
+        <p>Plataforma pensada para niños de 12 años en Colombia: vocabulario con íconos, gramática simple, lectura y <strong>simulacro</strong> con guardado local.</p>
+        <div class="cta-row">
+          <button class="btn-cta" onclick="mostrarSeccion('vokabeln')"><i class="fa-solid fa-language"></i> Empezar con Vocabulario</button>
+          <button class="btn-ghost-white" onclick="mostrarSeccion('simulation')"><i class="fa-solid fa-clipboard-check"></i> Simulacro directo</button>
+        </div>
+      </div>
+
+      <div class="hero-media">
+        <div class="h-card">
+          <i class="fa-solid fa-layer-group"></i>
+          <div class="kpi" id="kpi-words">200+</div>
+          <small>palabras básicas con íconos</small>
+        </div>
+            </div>
+    </div>
+  </div>
+
+  <!-- MÓDULOS DESTACADOS con explicación más detallada -->
+  <div class="modules-wrap">
+    <div class="modules-grid">
+      <div class="mcard" onclick="mostrarSeccion('vokabeln')">
+        <div class="ribbon">A2 Fokus</div>
+        <div class="top"><i class="fa-solid fa-language"></i><h3>Vokabeln lernen</h3></div>
+        <p>Tarjetas con <strong>íconos</strong>, artículo y plural. <br>Incluye palabras clave para el simulacro.</p>
+        <div class="pillset">
+          <span class="pill"><i class="fa-solid fa-tag"></i> Casa</span>
+          <span class="pill"><i class="fa-solid fa-tag"></i> Escuela</span>
+          <span class="pill"><i class="fa-solid fa-tag"></i> Transporte</span>
+        </div>
+        <button class="go">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+
+      <div class="mcard" onclick="mostrarSeccion('grammatik')">
+        <div class="top"><i class="fa-solid fa-book-open"></i><h3>Grammatik interaktiv</h3></div>
+        <p>Arrastra palabras, elige artículos y completa huecos. <br>Reglas básicas que usan en el examen.</p>
+        <div class="pillset">
+          <span class="pill">Presente</span><span class="pill">Pasado</span><span class="pill">Preposiciones</span>
+        </div>
+        <button class="go">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+
+      <div class="mcard" onclick="mostrarSeccion('lesen')">
+        <div class="top"><i class="fa-solid fa-book"></i><h3>Leseverstehen</h3></div>
+        <p>Mensajes, avisos y notas reales. <br>Preguntas de 3 opciones y V/F.</p>
+        <div class="pillset"><span class="pill">Mini-textos</span><span class="pill">Carteles</span></div>
+        <button class="go">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+
+      <div class="mcard" onclick="mostrarSeccion('redemittel')">
+        <div class="top"><i class="fa-solid fa-comment-dots"></i><h3>Redemittel</h3></div>
+        <p>Frases útiles para compras, transporte, salud y escuela. <br>Completa diálogos simples.</p>
+        <div class="pillset"><span class="pill">Diálogos</span><span class="pill">Frases clave</span></div>
+        <button class="go">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+
+      <div class="mcard" onclick="mostrarSeccion('quiz')">
+        <div class="top"><i class="fa-solid fa-gamepad"></i><h3>Quiz-Modus</h3></div>
+        <p>Trivia con tiempo, V/F y eliminación progresiva. <br>¡Aprende jugando!</p>
+        <div class="pillset"><span class="pill">Reto</span><span class="pill">Puntuación</span></div>
+        <button class="go">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+
+      <div class="mcard" onclick="mostrarSeccion('simulation')">
+        <div class="top"><i class="fa-solid fa-clipboard-list"></i><h3>Simulationsprüfung</h3></div>
+        <p>Simulacro integral A2. <br>Guarda progreso local e historial de puntajes.</p>
+        <div class="pillset"><span class="pill">Wortschatz</span><span class="pill">Grammatik</span><span class="pill">Lesen</span></div>
+        <button class="go">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
       </div>
     </div>
-    <main>
-      <div class="modules">
-        <div class="card vocab" onclick="mostrarSeccion('vokabeln')">
-          <i class="fa-solid fa-language icon"></i>
-          <h3>Vokabeln lernen</h3>
-          <p>Entdecke neue Wörter mit bunten Bildern und Spielen.</p>
-          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+
+  <!-- NUEVO: Ruta de aprendizaje -->
+  <div class="section-title"><i class="fa-solid fa-route"></i><h3>Ruta de aprendizaje</h3></div>
+  <div class="roadmap">
+    <div class="stage">
+      <div class="hdr"><i class="fa-solid fa-lightbulb"></i><strong>1 · Fundamentos</strong></div>
+      <ul>
+        <li>Vocabulario básico por temas (casa, escuela, ciudad).</li>
+        <li>Artículos y plurales con ejemplos sencillos.</li>
+      </ul>
+    </div>
+    <div class="stage">
+      <div class="hdr"><i class="fa-solid fa-sitemap"></i><strong>2 · Gramática esencial</strong></div>
+      <ul>
+        <li>Presente y pasado simple.</li>
+        <li>Preposiciones más comunes (in, auf, an...).</li>
+      </ul>
+    </div>
+    <div class="stage">
+      <div class="hdr"><i class="fa-solid fa-book-open-reader"></i><strong>3 · Lectura y frases</strong></div>
+      <ul>
+        <li>Textos cortos tipo A2 (avisos, correos).</li>
+        <li>Redemittel para situaciones reales.</li>
+      </ul>
+    </div>
+    <div class="stage">
+      <div class="hdr"><i class="fa-solid fa-check-double"></i><strong>4 · Simulacro A2</strong></div>
+      <ul>
+        <li>Examen integrado con puntaje.</li>
+        <li>Historial y guardado local.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CÓMO FUNCIONA -->
+  <div class="section-title"><i class="fa-solid fa-wand-magic-sparkles"></i><h3>¿Cómo funciona?</h3></div>
+  <div class="how">
+    <div class="panel">
+      <div class="steps">
+        <div class="step">
+          <i class="fa-solid fa-1"></i>
+          <div>
+            <strong>Vocabulario por temas</strong>
+            <p>Aprende 200 palabras con <em>íconos</em> y traducción. Prepara la base para el examen.</p>
+          </div>
         </div>
-        <div class="card grammar" onclick="mostrarSeccion('grammatik')">
-          <i class="fa-solid fa-book-open icon"></i>
-          <h3>Grammatik üben</h3>
-          <p>Lerne Zeiten, Fälle und Präpositionen durch interaktive Rätsel.</p>
-          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        <div class="step">
+          <i class="fa-solid fa-2"></i>
+          <div>
+            <strong>Practica con gramática y lectura</strong>
+            <p>Ejercicios cortos y objetivos, como en las pruebas reales A2.</p>
+          </div>
         </div>
-        <div class="card lesen" onclick="mostrarSeccion('lesen')">
-          <i class="fa-solid fa-book icon"></i>
-          <h3>Leseverstehen</h3>
-          <p>Verbessere dein Textverständnis mit Kurzgeschichten und Fragen.</p>
-          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-        <div class="card redemittel" onclick="mostrarSeccion('redemittel')">
-          <i class="fa-solid fa-comment-dots icon"></i>
-          <h3>Redemittel</h3>
-          <p>Lerne nützliche Ausdrücke für Alltag und Prüfungen.</p>
-          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-        <div class="card quiz" onclick="mostrarSeccion('quiz')">
-          <i class="fa-solid fa-gamepad icon"></i>
-          <h3>Quiz-Modus</h3>
-          <p>Teste dein Wissen spielerisch mit unterhaltsamen Quiz.</p>
-          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-        <div class="card test" onclick="mostrarSeccion('simulation')">
-          <i class="fa-solid fa-clipboard-list icon"></i>
-          <h3>Simulationsprüfung</h3>
-          <p>Erlebe das Prüfungsgefühl im realistischen Testmodus unter Zeitdruck.</p>
-          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        <div class="step">
+          <i class="fa-solid fa-3"></i>
+          <div>
+            <strong>Haz el simulacro final</strong>
+            <p>Integra todo lo aprendido y obtén tu <b>puntaje</b>. Se guarda tu progreso localmente.</p>
+          </div>
         </div>
       </div>
-    </main>
-  </section>
+    </div>
+    <div class="panel">
+      <!-- Imagen pública (reemplazo funcional de la anterior) -->
+      <img src="https://images.unsplash.com/photo-1529078155058-5d716f45d604?auto=format&fit=crop&w=1200&q=60" alt="Actividades educativas visuales">
+    </div>
+  </div>
+
+  <!-- BENEFICIOS -->
+  <div class="section-title"><i class="fa-solid fa-star"></i><h3>Beneficios</h3></div>
+  <div class="benefits">
+    <div class="benefit"><i class="fa-solid fa-mobile-screen-button"></i> <strong>100% responsive</strong><br><small>Funciona perfecto en celular, tablet y laptop.</small></div>
+    <div class="benefit"><i class="fa-solid fa-icons"></i> <strong>Visual e intuitivo</strong><br><small>Íconos claros y textos cortos.</small></div>
+    <div class="benefit"><i class="fa-solid fa-bolt"></i> <strong>Rápido</strong><br><small>Sin audios ni descargas pesadas.</small></div>
+    <div class="benefit"><i class="fa-solid fa-floppy-disk"></i> <strong>Guardado local</strong><br><small>Retoma tu simulacro cuando quieras.</small></div>
+  </div>
+
+  <!-- Métricas en vivo (ligeras) -->
+  <div class="metrics">
+    <div class="metric"><div class="num" id="m-sets">6</div><small>secciones principales</small></div>
+    <div class="metric"><div class="num" id="m-items">100+</div><small>ítems de práctica</small></div>
+    <div class="metric"><div class="num" id="m-sessions">15–20 min</div><small>sesiones sugeridas</small></div>
+  </div>
+
+  <!-- Testimonios -->
+  <div class="section-title"><i class="fa-solid fa-quote-left"></i><h3>Testimonios</h3></div>
+  <div class="testimonials">
+    <div class="tcard">
+      <i class="fa-solid fa-user"></i>
+      <p><strong>Camila (12):</strong> “Me encantaron las tarjetas con íconos. El simulacro fue como el examen real.”</p>
+    </div>
+    <div class="tcard">
+      <i class="fa-solid fa-user-graduate"></i>
+      <p><strong>Profe Laura:</strong> “Estructura clara y ejercicios objetivos para A2. Perfecto para clase y casa.”</p>
+    </div>
+    <div class="tcard">
+      <i class="fa-solid fa-user-shield"></i>
+      <p><strong>Mamá de Juan:</strong> “Puede estudiar en el celular sin distraerse ni salir de la página.”</p>
+    </div>
+  </div>
+
+  <!-- Para profes y familias -->
+  <div class="section-title"><i class="fa-solid fa-people-group"></i><h3>Para profes y familias</h3></div>
+  <div class="for-all">
+    <div class="callout">
+      <h4><i class="fa-solid fa-chalkboard-user"></i> Docentes</h4>
+      <ul>
+        <li>Secuencias listas por temas y nivel A2.</li>
+        <li>Ejercicios autoevaluables con retroalimentación inmediata.</li>
+        <li>Simulacro con avance local (sin registro).</li>
+      </ul>
+    </div>
+    <div class="callout">
+      <h4><i class="fa-solid fa-children"></i> Familias</h4>
+      <ul>
+        <li>Explicaciones en español y actividades cortas.</li>
+        <li>Compatible con dispositivos móviles de gama media.</li>
+        <li>Sin enlaces externos ni publicidad.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section-title"><i class="fa-solid fa-circle-question"></i><h3>Preguntas frecuentes</h3></div>
+  <div class="faq">
+    <details>
+      <summary><i class="fa-solid fa-shield-heart"></i> ¿Necesito registrarme?</summary>
+      <p>No. Tu progreso del simulacro se guarda <strong>solo en este dispositivo</strong> (localStorage).</p>
+    </details>
+    <details>
+      <summary><i class="fa-solid fa-book-bookmark"></i> ¿El nivel es A2?</summary>
+      <p>Sí. Todo el contenido está orientado a <strong>A1/A2</strong> con foco en A2 para aprobar pruebas estandarizadas.</p>
+    </details>
+    <details>
+      <summary><i class="fa-solid fa-brain"></i> ¿Hay contenido de práctica variado?</summary>
+      <p>Incluye <em>vocabulario</em>, <em>gramática</em>, <em>lectura</em>, <em>expresiones</em> y un <strong>simulacro</strong> por ítems.</p>
+    </details>
+  </div>
+
+  <!-- FOOTER dentro de HOME (visible en inicio) -->
+  <footer class="site-footer">
+    <div class="foot-wrap">
+      <div class="foot-col">
+        <h4>HalloGenios</h4>
+        <p>Aprender alemán puede ser <strong>divertido</strong> y efectivo. Diseñado para niños de 12 años en Colombia.</p>
+        <div class="foot-social">
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+        </div>
+      </div>
+      <div class="foot-col">
+        <h4>Explora</h4>
+        <p><a href="javascript:void(0)" onclick="mostrarSeccion('vokabeln')">Vocabulario</a></p>
+        <p><a href="javascript:void(0)" onclick="mostrarSeccion('grammatik')">Gramática</a></p>
+        <p><a href="javascript:void(0)" onclick="mostrarSeccion('lesen')">Lectura</a></p>
+      </div>
+      <div class="foot-col">
+        <h4>Práctica</h4>
+        <p><a href="javascript:void(0)" onclick="mostrarSeccion('redemittel')">Redemittel</a></p>
+        <p><a href="javascript:void(0)" onclick="mostrarSeccion('quiz')">Quiz</a></p>
+        <p><a href="javascript:void(0)" onclick="mostrarSeccion('simulation')">Simulacro</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ====== Header: menú móvil con backdrop (sin solapes) ======
+    (function(){
+      const toggle = document.querySelector('header .menu-toggle');
+      const nav = document.querySelector('header nav');
+      const header = document.querySelector('header');
+      // Crear backdrop una vez
+      let backdrop = document.querySelector('.nav-backdrop');
+      if(!backdrop){ 
+        backdrop = document.createElement('div');
+        backdrop.className = 'nav-backdrop';
+        document.body.appendChild(backdrop);
+      }
+      function openNav(){
+        nav.classList.add('open');
+        backdrop.classList.add('show');
+        document.body.classList.add('noscroll');
+        toggle?.setAttribute('aria-expanded','true');
+      }
+      function closeNav(){
+        nav.classList.remove('open');
+        backdrop.classList.remove('show');
+        document.body.classList.remove('noscroll');
+        toggle?.setAttribute('aria-expanded','false');
+      }
+      if(toggle && nav){
+        toggle.setAttribute('role','button');
+        toggle.setAttribute('aria-controls','mainnav');
+        nav.id = 'mainnav';
+        toggle.addEventListener('click', ()=> nav.classList.contains('open') ? closeNav() : openNav());
+        // Cerrar al seleccionar una opción
+        nav.querySelectorAll('a').forEach(a=> a.addEventListener('click', closeNav));
+        // Cerrar al tocar backdrop
+        backdrop.addEventListener('click', closeNav);
+      }
+      // Encoger header al hacer scroll
+      let last = 0;
+      window.addEventListener('scroll', ()=>{
+        const y = window.scrollY || 0;
+        if(!header) return;
+        if(y > 10 && last <= 10) header.classList.add('shrink');
+        if(y <= 10 && last > 10) header.classList.remove('shrink');
+        last = y;
+      });
+    })();
+
+    // ====== Contadores suaves en KPI ======
+    (function(){
+      const elWords = document.getElementById('kpi-words');
+      const elEx = document.getElementById('kpi-ex');
+      if(!elWords || !elEx) return;
+      const animate = (el, to)=>{
+        const start = 0; const dur = 900; const t0 = performance.now();
+        const step = t=>{
+          const p = Math.min(1, (t - t0)/dur);
+          el.textContent = Math.round(start + p*to) + '+';
+          if(p<1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      };
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(e.isIntersecting){
+            animate(elWords, 200);
+            animate(elEx, 80);
+            io.disconnect();
+          }
+        });
+      }, {threshold:.6});
+      io.observe(elWords);
+    })();
+
+    // ====== Métricas dinámicas simples (opcional) ======
+    (function(){
+      const mSets = document.getElementById('m-sets');
+      if(!mSets) return;
+      // Solo ejemplo de incremento visual (no persistente)
+      let bumped = false;
+      const io2 = new IntersectionObserver((es)=>{
+        es.forEach(e=>{
+          if(e.isIntersecting && !bumped){
+            bumped = true;
+            // Pequeña animación
+            mSets.animate([{transform:'scale(1)'},{transform:'scale(1.1)'},{transform:'scale(1)'}],{duration:600});
+          }
+        });
+      },{threshold:.7});
+      io2.observe(mSets);
+    })();
+  </script>
+</section>
+
 
 <!-- VOCABULARY FLASHCARDS (EXTENDIDO) -->
 <section id="vokabeln" class="contenido-oculto">
@@ -3328,6 +3800,7 @@
   </script>
 </body>
 </html>
+
 
 
 
