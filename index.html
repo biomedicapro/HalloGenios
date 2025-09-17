@@ -361,50 +361,517 @@
     <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
   </section>
 
-  <!-- GRAMMATIK ÜBEN -->
-  <section id="grammatik" class="contenido-oculto">
-    <h2>Grammatik interaktiv</h2>
-    <p>Verbessere deine Deutschkenntnisse mit spannenden Übungen!</p>
+<!-- GRAMMATIK ÜBEN (EXTENDIDO) -->
+<section id="grammatik" class="contenido-oculto">
+  <style>
+    /* ===== Estilos locales para esta sección ===== */
+    .hint {
+      background: rgba(255,255,255,.8);
+      border-left: 5px solid var(--blue);
+      padding: .8rem 1rem; border-radius: 8px; margin: .6rem 0 1rem;
+      font-size: .95rem;
+    }
+    .exo { margin: 1.2rem 0 2rem; }
+    .exo h3 { display: flex; align-items: center; gap: .6rem; }
+    .exo h3 i { opacity: .8; }
 
-    <h3>1. Sätze bilden (Drag & Drop)</h3>
-    <p>Ziehe die Wörter in die richtige Reihenfolge.</p>
-    <div class="dnd-container">
-      <div class="dnd-zone" id="zone1"></div>
-      <div class="dnd-zone" id="zone2"></div>
-      <div class="dnd-zone" id="zone3"></div>
-      <div class="dnd-source">
-        <div class="dnd-item" draggable="true">ich</div>
-        <div class="dnd-item" draggable="true">Fußball</div>
-        <div class="dnd-item" draggable="true">spiele</div>
+    /* DnD / Tap-to-build */
+    .dnd-app { display:flex; flex-direction:column; gap: .75rem; }
+    .dnd-status { display:flex; justify-content:space-between; align-items:center; gap:.5rem; font-size:.95rem; }
+    .dnd-target, .dnd-source {
+      display:flex; flex-wrap:wrap; gap:.5rem; padding: .8rem;
+      min-height: 52px; border:2px dashed var(--blue); border-radius: 10px; background: rgba(255,255,255,.7);
+    }
+    .dnd-target { border-style: solid; }
+    .chip {
+      display:inline-flex; align-items:center; gap:.35rem;
+      padding:.5rem .7rem; border-radius: 999px;
+      background: var(--white); border:2px solid var(--coral);
+      font-weight:600; cursor: pointer; user-select:none;
+      transition: transform .12s ease-in-out;
+    }
+    .chip:active { transform: scale(.96); }
+    .chip[draggable="true"] { cursor: grab; }
+    .dnd-controls { display:flex; flex-wrap:wrap; gap:.6rem; }
+    .btn-ghost {
+      padding:.45rem .8rem; border-radius: 8px; border:2px solid var(--blue);
+      background: transparent; font-weight:600; cursor:pointer;
+    }
+    .ok { color:#1a7f37; }
+    .bad { color:#b1002e; }
+
+    /* Multiple choice */
+    .mc-card { background: rgba(255,255,255,.8); border-radius:12px; padding: .9rem; margin:.7rem 0; box-shadow:0 2px 8px var(--shadow); }
+    .mc-q { margin-bottom:.4rem; }
+    .mc-opts { list-style:none; padding:0; margin:0; }
+    .mc-opts li { margin:.35rem 0; }
+    .mc-controls { display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; margin-top:.6rem; }
+
+    /* Fill-in + Nube de palabras */
+    .fill-item { background: rgba(255,255,255,.85); padding:.9rem; border-radius:12px; box-shadow:0 2px 8px var(--shadow); margin:.6rem 0; }
+    .fill-item input {
+      min-width: 120px; max-width: 160px; padding:.45rem .6rem; border-radius: 8px;
+      border:2px solid var(--blue); outline:none; font-weight:700; text-align:center;
+    }
+    .word-bank { display:flex; flex-wrap:wrap; gap:.45rem; margin-top:.8rem; }
+    .bank-chip { background:#fff; border:2px solid var(--grass); border-radius:999px; padding:.35rem .6rem; font-weight:700; cursor:pointer; }
+
+    /* Modal de glosario */
+    .modal { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:9999; }
+    .modal.hidden { display:none; }
+    .modal-content {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem; max-width: 420px; width: calc(100% - 2rem);
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .modal-content h4 { margin-bottom:.4rem; color:var(--blue); }
+    .modal-close { float:right; border:none; background:transparent; font-size:1.4rem; cursor:pointer; }
+
+    /* Palabras difíciles (clic para ver significado) */
+    .gloss { border-bottom: 2px dotted var(--coral); background: rgba(212,90,86,.08); border-radius:6px; padding:0 .2rem; cursor:pointer; }
+
+    /* Móvil */
+    @media (max-width: 600px){
+      .dnd-target, .dnd-source { min-height: 64px; }
+      .chip { padding:.6rem .8rem; }
+      .fill-item input { min-width: 90px; max-width: 120px; }
+    }
+  </style>
+
+  <h2>Gramática interactiva</h2>
+  <p class="hint">
+    👋 Bienvenido/a. Aquí reforzarás estructuras básicas de alemán (<strong>A1/A2</strong>) usando ejercicios cortos y visuales.
+    Todo está pensado para celular, tablet y computador. Si <em>arrastrar y soltar</em> no funciona en tu móvil,
+    simplemente <strong>toca</strong> las palabras para construir la frase. Las <span class="gloss" data-term="palabras difíciles">palabras difíciles</span>
+    aparecen subrayadas: tócalas para ver su significado en español.
+  </p>
+
+  <!-- 1) DnD / Tap-to-build -->
+  <article class="exo exo-dnd">
+    <h3><i class="fa-solid fa-hand-pointer"></i> 1. Ordena la frase (Drag & Drop o toque)</h3>
+    <p>Forma la oración en alemán a partir de las palabras desordenadas. Consejo: observa la posición del verbo y los elementos del tiempo/lugar.</p>
+
+    <div id="dnd-app" class="dnd-app" aria-live="polite">
+      <div class="dnd-status">
+        <span id="dnd-progress">1 / 20</span>
+        <div>
+          <button id="dnd-reset" class="btn-ghost" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+          <button id="dnd-solution" class="btn-ghost" type="button"><i class="fa-solid fa-lightbulb"></i> Ver solución</button>
+        </div>
       </div>
-      <button class="btn-submit" onclick="checkSentence()">Überprüfen</button>
-      <p id="dnd-result"></p>
+      <div class="dnd-target" id="dnd-target" aria-label="Tu frase" role="list"></div>
+      <div class="dnd-source" id="dnd-source" aria-label="Palabras disponibles" role="list"></div>
+      <div class="dnd-controls">
+        <button id="dnd-check" class="btn-submit" type="button">Comprobar</button>
+        <button id="dnd-prev" class="btn-ghost" type="button">⟵ Anterior</button>
+        <button id="dnd-next" class="btn-ghost" type="button">Siguiente ⟶</button>
+      </div>
+      <p id="dnd-feedback"></p>
     </div>
+  </article>
 
-    <h3>2. Multiple Choice</h3>
-    <p>Wähle das richtige Wort:</p>
-    <div class="quiz-question">
-      <p>Ich ___ ein Buch.</p>
-      <ul class="quiz-options">
-        <li><label><input type="radio" name="q2" value="a"> a) lesen</label></li>
-        <li><label><input type="radio" name="q2" value="b"> b) lese</label></li>
-        <li><label><input type="radio" name="q2" value="c"> c) liest</label></li>
-      </ul>
-      <button class="btn-submit" onclick="checkMC('q2', 'b', 'q2-result')">Überprüfen</button>
-      <p id="q2-result"></p>
+  <!-- 2) Multiple choice -->
+  <article class="exo exo-mc">
+    <h3><i class="fa-solid fa-list-check"></i> 2. Opción múltiple (elige la forma correcta)</h3>
+    <p>Selecciona la opción correcta para completar la frase. Enfócate en <strong>artículos</strong>, <strong>casos</strong> y <strong>formas verbales</strong>.</p>
+
+    <div id="mc-app">
+      <div id="mc-questions"></div>
+      <div class="mc-controls">
+        <button id="mc-check" class="btn-submit" type="button">Comprobar todo</button>
+        <button id="mc-reset" class="btn-ghost" type="button">Reiniciar</button>
+        <p id="mc-score" class="result"></p>
+      </div>
     </div>
+  </article>
 
-    <h3>3. Lückentext</h3>
-    <p>Fülle das fehlende Wort ein:</p>
-    <div class="quiz-question">
-      <p>Ich ___ 12 Jahre alt.</p>
-      <input type="text" id="fill1" placeholder="Antwort">
-      <button class="btn-submit" onclick="checkFill('fill1', 'bin', 'fill1-result')">Überprüfen</button>
-      <p id="fill1-result"></p>
+  <!-- 3) Llenado de huecos + Nube de palabras -->
+  <article class="exo exo-fill">
+    <h3><i class="fa-solid fa-pen-to-square"></i> 3. Llenado de huecos (con banco de palabras)</h3>
+    <p>Completa las oraciones con la opción correcta. Puedes escribir directamente o tocar una palabra del <strong>banco</strong> para insertarla.</p>
+    <div id="fill-app">
+      <div id="fill-questions"></div>
+      <div>
+        <h4 style="margin-top:.8rem;">Banco de palabras</h4>
+        <div class="word-bank" id="word-bank"></div>
+      </div>
+      <div class="mc-controls">
+        <button id="fill-check" class="btn-submit" type="button">Comprobar todo</button>
+        <button id="fill-reset" class="btn-ghost" type="button">Reiniciar</button>
+        <p id="fill-score" class="result"></p>
+      </div>
     </div>
+  </article>
 
-    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
-  </section>
+  <span class="back-btn" onclick="mostrarSeccion('home')">Volver al inicio</span>
+
+  <!-- Modal Glosario -->
+  <div id="gloss-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="gloss-term" aria-describedby="gloss-def">
+    <div class="modal-content">
+      <button class="modal-close" id="gloss-close" aria-label="Cerrar">×</button>
+      <h4 id="gloss-term">Término</h4>
+      <p id="gloss-def">Definición en español.</p>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    /* ======== Datos (Banco de ejercicios) ======== */
+    const DND_ITEMS = [
+      { parts:["ich","früh","auf","stehe"], answer:"Ich stehe früh auf." },
+      { parts:["wir","mit dem Bus","zur Schule","fahren"], answer:"Wir fahren mit dem Bus zur Schule." },
+      { parts:["meine Schwester","gern","liest","Bücher"], answer:"Meine Schwester liest gern Bücher." },
+      { parts:["wann","triffst","du","Freunde"], answer:"Wann triffst du Freunde?" },
+      { parts:["er","jeden Tag","kocht","das Abendessen"], answer:"Er kocht jeden Tag das Abendessen." },
+      { parts:["spielen","die Kinder","im Park"], answer:"Die Kinder spielen im Park." },
+      { parts:["ich","einkaufen","im Supermarkt","gehe"], answer:"Ich gehe im Supermarkt einkaufen." },
+      { parts:["wir","heute Abend","bestellen","eine Pizza"], answer:"Wir bestellen heute Abend eine Pizza." },
+      { parts:["wann","kommt","der Zug"], answer:"Wann kommt der Zug?" },
+      { parts:["meine Eltern","im Krankenhaus","arbeiten","beide"], answer:"Meine Eltern arbeiten beide im Krankenhaus." },
+      { parts:["wie lange","lernst","du","Deutsch"], answer:"Wie lange lernst du Deutsch?" },
+      { parts:["sie","auf dem Land","wohnt"], answer:"Sie wohnt auf dem Land." },
+      { parts:["wir","morgen","keine Schule","haben"], answer:"Wir haben morgen keine Schule." },
+      { parts:["machst","du","nach dem Essen","die Hausaufgaben"], answer:"Machst du nach dem Essen die Hausaufgaben?" },
+      { parts:["er","mit dem Fahrrad","zur Arbeit","fährt"], answer:"Er fährt mit dem Fahrrad zur Arbeit." },
+      { parts:["die Lehrerin","erklärt","die Aufgabe","langsam"], answer:"Die Lehrerin erklärt die Aufgabe langsam." },
+      { parts:["wen","besuchen","wir","am Sonntag"], answer:"Wen besuchen wir am Sonntag?" },
+      { parts:["ich","ein Ticket","am Schalter","kaufe"], answer:"Ich kaufe ein Ticket am Schalter." },
+      { parts:["die Bahn","heute","hat","Verspätung"], answer:"Die Bahn hat heute Verspätung." },
+      { parts:["hörst","du","nach der Schule","Musik"], answer:"Hörst du nach der Schule Musik?" }
+    ];
+
+    const MC_ITEMS = [
+      { q:"Ich ___ ein Buch.", opts:["lesen","lese","liest"], ans:1 },
+      { q:"Wir ___ gestern keine Zeit.", opts:["hatten","hat","haben"], ans:0 },
+      { q:"___ Bruder studiert in Berlin.", opts:["Mein","Meine","Meinen"], ans:0 },
+      { q:"Ich fahre morgen ___ Bus zur Schule.", opts:["mit dem","mit den","mit der"], ans:0 },
+      { q:"Sie ___ sehr müde.", opts:["ist","sind","seid"], ans:0 },
+      { q:"Gestern ___ es sehr kalt.", opts:["war","ist","waren"], ans:0 },
+      { q:"Ich nehme ___ Apfel.", opts:["der","den","dem"], ans:1 },
+      { q:"Wir treffen ___ Freunde im Park.", opts:["unsere","unseren","unserem"], ans:0 },
+      { q:"Er hat ___ Hausaufgaben gemacht.", opts:["sein","seine","seinen"], ans:1 },
+      { q:"Ich gehe heute ___ Stadt.", opts:["in die","in der","in den"], ans:0 },
+      { q:"Das ist die Tasche ___ Schwester.", opts:["meines","meiner","meinem"], ans:1 },
+      { q:"Ich wohne seit zwei Jahren ___ Köln.", opts:["in","nach","zu"], ans:0 },
+      { q:"Können Sie mir ___ helfen?", opts:["bitte","bittet","gebeten"], ans:0 },
+      { q:"Er ___ gestern krank.", opts:["ist","war","hatte"], ans:1 },
+      { q:"Ich habe heute keine ___.", opts:["Zeit","Zeite","Zeiten"], ans:0 },
+      { q:"Wie spät ___ es?", opts:["sind","ist","war"], ans:1 },
+      { q:"Wir warten ___ den Bus.", opts:["auf","an","mit"], ans:0 },
+      { q:"Ich trinke lieber ___ Wasser als Cola.", opts:["ein","Ø","der"], ans:1 },
+      { q:"Sie hat ___ neue Schuhe gekauft.", opts:["ein","eine","Ø"], ans:1 },
+      { q:"Der Zug ___ um 7:30 Uhr ab.", opts:["fährt","fahrt","fuhr"], ans:0 }
+    ];
+
+    const FILL_ITEMS = [
+      { q:"Ich ___ 12 Jahre alt.", ans:"bin" },
+      { q:"Wir ___ am Samstag frei.", ans:"haben" },
+      { q:"Gestern ___ ich krank.", ans:"war" },
+      { q:"Meine Mutter ___ im Krankenhaus.", ans:"arbeitet" },
+      { q:"Ich ___ jeden Morgen Kaffee.", ans:"trinke" },
+      { q:"Er ___ mit dem Fahrrad zur Schule.", ans:"fährt" },
+      { q:"Wir ___ die Großeltern am Sonntag.", ans:"besuchen" },
+      { q:"Ich ___ kein Geld dabei.", ans:"habe" },
+      { q:"Wo ___ du? In Köln.", ans:"wohnst" },
+      { q:"Sie ___ sehr gut Deutsch.", ans:"spricht" },
+      { q:"Im Sommer ___ wir oft im See.", ans:"baden" },
+      { q:"Gestern ___ wir keine Hausaufgaben.", ans:"hatten" },
+      { q:"Ich ___ heute früh auf.", ans:"stehe" },
+      { q:"Sie ___ Brot und Milch.", ans:"kauft" },
+      { q:"Wir ___ um 7 Uhr in der Schule.", ans:"sind" },
+      { q:"Der Film ___ um 18:30 Uhr.", ans:"beginnt" },
+      { q:"Ich ___ gern Fußball.", ans:"spiele" },
+      { q:"Heute ___ es warm.", ans:"ist" },
+      { q:"Entschuldigung, ich ___ eine Frage.", ans:"habe" },
+      { q:"Meine Freunde ___ morgen nach Berlin.", ans:"fahren" }
+    ];
+    const WORD_BANK = [...new Set(FILL_ITEMS.map(x => x.ans))];
+
+    /* ======== Glosario (palabras difíciles) ======== */
+    const GLOSS = {
+      "Verspätung":"demora, retraso (p.ej., del tren).",
+      "Schalter":"ventanilla/taquilla (punto de atención para comprar tickets).",
+      "beide":"ambos/ambas.",
+      "wann":"¿cuándo?",
+      "wie lange":"¿cuánto tiempo?",
+      "bestellen":"pedir/ordenar (comida, producto).",
+      "erklärt":"explica.",
+      "Aufgabe":"tarea/ejercicio.",
+      "besuchen":"visitar.",
+      "beginnt":"empieza, comienza.",
+      "wohnt":"vive (reside).",
+      "fährt":"va/conduce (en vehículo).",
+      "seit":"desde (hace).",
+      "gebeten":"(participio de) pedir/rogar (no se usa aquí como opción correcta)."
+    };
+
+    /* ======== Utilidades ======== */
+    const byId = id => document.getElementById(id);
+    const norm = s => s.toLowerCase().replaceAll(/[.,!?¿¡]/g,'').trim();
+    function shuffle(arr){ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); }
+
+    /* ======== 1) DnD / Tap-to-build ======== */
+    const dnd = {
+      idx: 0,
+      init(){
+        this.target = byId('dnd-target');
+        this.source = byId('dnd-source');
+        this.progress = byId('dnd-progress');
+        this.feedback = byId('dnd-feedback');
+        byId('dnd-check').addEventListener('click', ()=>this.check());
+        byId('dnd-prev').addEventListener('click', ()=>this.move(-1));
+        byId('dnd-next').addEventListener('click', ()=>this.move(1));
+        byId('dnd-reset').addEventListener('click', ()=>this.load(this.idx));
+        byId('dnd-solution').addEventListener('click', ()=>this.showSolution());
+        this.load(0);
+      },
+      move(delta){
+        this.idx = (this.idx + delta + DND_ITEMS.length) % DND_ITEMS.length;
+        this.load(this.idx);
+      },
+      makeChip(text){
+        const btn = document.createElement('button');
+        btn.className = 'chip';
+        btn.type = 'button';
+        btn.textContent = text;
+        btn.setAttribute('draggable','true');
+        btn.addEventListener('dragstart', e=> e.dataTransfer.setData('text/plain', text));
+        // Tap-to-move
+        btn.addEventListener('click', ()=>{
+          if (btn.parentElement === this.source) {
+            this.target.appendChild(btn);
+          } else {
+            this.source.appendChild(btn);
+          }
+        });
+        // Glosario si aplica
+        const t = text.trim();
+        const key = Object.keys(GLOSS).find(k => k.toLowerCase() === t.toLowerCase());
+        if (key){
+          btn.classList.add('gloss');
+          btn.addEventListener('click', (ev)=>{
+            // Evitar que el movimiento tape el gloss: si Ctrl o Alt, solo gloss
+            if (!ev.ctrlKey && !ev.altKey) showGloss(key); 
+          }, {capture:true});
+        }
+        return btn;
+      },
+      setupDnDZones(){
+        const onOver = e=>{ e.preventDefault(); };
+        const onDropTo = (toEl) => (e)=>{
+          e.preventDefault();
+          const text = e.dataTransfer.getData('text/plain');
+          // Buscar chip en source con ese texto (si hay repetidos, toma el primero visible)
+          const chip = [...this.source.querySelectorAll('.chip')].find(c => c.textContent === text);
+          if (chip) toEl.appendChild(chip);
+        };
+        this.target.addEventListener('dragover', onOver);
+        this.source.addEventListener('dragover', onOver);
+        this.target.addEventListener('drop', onDropTo(this.target));
+        this.source.addEventListener('drop', onDropTo(this.source));
+      },
+      load(i){
+        const item = DND_ITEMS[i];
+        this.feedback.textContent = '';
+        this.progress.textContent = (i+1) + ' / ' + DND_ITEMS.length;
+
+        // limpiar
+        this.target.innerHTML = '';
+        this.source.innerHTML = '';
+
+        // rellenar source con orden aleatorio
+        const parts = shuffle(item.parts.slice());
+        parts.forEach(p => this.source.appendChild(this.makeChip(p)));
+
+        // Asegurar listeners DnD
+        this.setupDnDZones();
+      },
+      currentSentence(){
+        return [...this.target.querySelectorAll('.chip')].map(c=>c.textContent).join(' ');
+      },
+      check(){
+        const item = DND_ITEMS[this.idx];
+        const got = norm(this.currentSentence());
+        const expected = norm(item.answer);
+        if (!got) {
+          this.feedback.textContent = 'Primero arma tu oración tocando/arrastrando las palabras.';
+          this.feedback.className = 'bad';
+          return;
+        }
+        if (got === expected){
+          this.feedback.textContent = '¡Correcto! 🎉';
+          this.feedback.className = 'ok';
+        } else {
+          this.feedback.textContent = 'Aún no. Revisa posición del verbo y complementos.';
+          this.feedback.className = 'bad';
+        }
+      },
+      showSolution(){
+        const item = DND_ITEMS[this.idx];
+        this.target.innerHTML = '';
+        this.source.innerHTML = '';
+        item.parts.forEach(p => this.target.appendChild(this.makeChip(p)));
+        this.feedback.textContent = 'Solución mostrada.';
+        this.feedback.className = 'ok';
+      }
+    };
+
+    /* ======== 2) Multiple choice ======== */
+    const mc = {
+      init(){
+        this.wrap = byId('mc-questions');
+        this.score = byId('mc-score');
+        byId('mc-check').addEventListener('click', ()=>this.checkAll());
+        byId('mc-reset').addEventListener('click', ()=>this.render());
+        this.render();
+      },
+      render(){
+        this.score.textContent = '';
+        this.wrap.innerHTML = '';
+        MC_ITEMS.forEach((it, idx)=>{
+          const card = document.createElement('div'); card.className='mc-card';
+          const q = document.createElement('div'); q.className='mc-q';
+          // Realzar palabras difíciles en el enunciado
+          let qText = it.q;
+          qText = qText
+            .replace('seit', '<span class="gloss" data-term="seit">seit</span>');
+          q.innerHTML = `<strong>${idx+1}.</strong> ${qText}`;
+          const ul = document.createElement('ul'); ul.className='mc-opts';
+          it.opts.forEach((opt,oIdx)=>{
+            // marcar opciones con términos difíciles
+            let showOpt = opt;
+            if (GLOSS[opt]) showOpt = `<span class="gloss" data-term="${opt}">${opt}</span>`;
+            const id = `mc_${idx}_${oIdx}`;
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <label for="${id}">
+                <input type="radio" id="${id}" name="mc_${idx}" value="${oIdx}">
+                ${String.fromCharCode(97+oIdx)}) ${showOpt}
+              </label>`;
+            ul.appendChild(li);
+          });
+          const feedback = document.createElement('p'); feedback.id = `mc_fb_${idx}`;
+          card.appendChild(q); card.appendChild(ul); card.appendChild(feedback);
+          this.wrap.appendChild(card);
+        });
+        // activar glosario en los spans añadidos
+        this.wrap.querySelectorAll('.gloss').forEach(el=>{
+          el.addEventListener('click', ()=> showGloss(el.dataset.term));
+        });
+      },
+      checkAll(){
+        let correct=0;
+        MC_ITEMS.forEach((it, idx)=>{
+          const chosen = document.querySelector(`input[name="mc_${idx}"]:checked`);
+          const fb = byId(`mc_fb_${idx}`);
+          if(!chosen){
+            fb.textContent='Elige una opción.'; fb.className='bad';
+            return;
+          }
+          if (parseInt(chosen.value,10) === it.ans){
+            fb.textContent='¡Correcto!'; fb.className='ok'; correct++;
+          } else {
+            fb.textContent=`Incorrecto. Respuesta: ${String.fromCharCode(97+it.ans)}) ${it.opts[it.ans]}`; fb.className='bad';
+          }
+        });
+        this.score.textContent = `Puntaje: ${correct} / ${MC_ITEMS.length}`;
+      }
+    };
+
+    /* ======== 3) Fill-in + Banco de palabras ======== */
+    const fill = {
+      init(){
+        this.wrap = byId('fill-questions');
+        this.bank = byId('word-bank');
+        this.score = byId('fill-score');
+        byId('fill-check').addEventListener('click', ()=>this.checkAll());
+        byId('fill-reset').addEventListener('click', ()=>this.render());
+        this.render();
+      },
+      render(){
+        this.score.textContent = '';
+        this.wrap.innerHTML = '';
+        // Render preguntas
+        FILL_ITEMS.forEach((it, idx)=>{
+          const box = document.createElement('div'); box.className='fill-item';
+          // Resaltar palabras difíciles en el enunciado
+          let qText = it.q
+            .replace('fährt','<span class="gloss" data-term="fährt">fährt</span>')
+            .replace('wo','<span class="gloss" data-term="wann">wo</span>') // nota: usamos gloss de 'wann' solo para ejemplo "interrogativos"
+            .replace('beginnt','<span class="gloss" data-term="beginnt">beginnt</span>')
+            .replace('wohne','<span class="gloss" data-term="wohnt">wohne</span>') // aproximación
+            .replace('wohns','<span class="gloss" data-term="wohnt">wohns</span>');
+          box.innerHTML = `
+            <label for="fill_${idx}"><strong>${idx+1}.</strong> ${qText}</label>
+            <div style="margin-top:.4rem;">
+              <input inputmode="latin" autocomplete="off" autocapitalize="off" spellcheck="false" id="fill_${idx}" placeholder="Escribe o toca del banco →">
+              <span id="fill_fb_${idx}"></span>
+            </div>
+          `;
+          this.wrap.appendChild(box);
+        });
+        // Glosario en enunciados
+        this.wrap.querySelectorAll('.gloss').forEach(el=>{
+          el.addEventListener('click', ()=> showGloss(el.dataset.term));
+        });
+        // Banco de palabras
+        this.bank.innerHTML = '';
+        WORD_BANK.forEach(w=>{
+          const chip = document.createElement('button');
+          chip.type='button'; chip.className='bank-chip'; chip.textContent = w;
+          chip.addEventListener('click', ()=>{
+            // insertar en input enfocado o el primero vacío
+            const focused = document.activeElement && document.activeElement.tagName==='INPUT' && document.activeElement.id.startsWith('fill_')
+              ? document.activeElement
+              : [...this.wrap.querySelectorAll('input')].find(i=>!i.value);
+            if (focused) {
+              focused.value = w;
+              focused.focus();
+            }
+          });
+          this.bank.appendChild(chip);
+        });
+      },
+      checkAll(){
+        let correct=0;
+        FILL_ITEMS.forEach((it, idx)=>{
+          const input = byId(`fill_${idx}`);
+          const fb = byId(`fill_fb_${idx}`);
+          const val = (input.value || '').trim().toLowerCase();
+          if (!val){ fb.textContent=' ⚠️'; fb.className='bad'; fb.style.marginLeft='.4rem'; return; }
+          if (val === it.ans.toLowerCase()){
+            fb.textContent=' ✔'; fb.className='ok'; fb.style.marginLeft='.4rem'; correct++;
+          } else {
+            fb.textContent=` ✖ (${it.ans})`; fb.className='bad'; fb.style.marginLeft='.4rem';
+          }
+        });
+        this.score.textContent = `Puntaje: ${correct} / ${FILL_ITEMS.length}`;
+      }
+    };
+
+    /* ======== Modal glosario ======== */
+    const modal = byId('gloss-modal'), termEl = byId('gloss-term'), defEl = byId('gloss-def');
+    byId('gloss-close').addEventListener('click', ()=> modal.classList.add('hidden'));
+    function showGloss(term){
+      const key = Object.keys(GLOSS).find(k => k.toLowerCase() === term.toLowerCase());
+      termEl.textContent = key || term;
+      defEl.textContent = GLOSS[key] || 'Sin definición registrada.';
+      modal.classList.remove('hidden');
+    }
+
+    /* ======== Inicializar cuando el DOM esté listo ======== */
+    function initAll(){
+      // Activar glosario en el texto introductorio
+      document.querySelectorAll('#grammatik .gloss').forEach(el=>{
+        if (el.dataset.term) el.addEventListener('click', ()=> showGloss(el.dataset.term));
+      });
+      dnd.init(); mc.init(); fill.init();
+    }
+    if (document.readyState !== 'loading') initAll();
+    else document.addEventListener('DOMContentLoaded', initAll);
+  })();
+  </script>
+</section>
+
 
   <!-- LESEVERSTEHEN -->
   <section id="lesen" class="contenido-oculto">
@@ -687,3 +1154,4 @@
   </script>
 </body>
 </html>
+
