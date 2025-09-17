@@ -2656,43 +2656,539 @@
 </section>
 
 
-  <!-- SIMULATIONSFÜHRUNG EXAMEN -->
-  <section id="simulation" class="contenido-oculto">
-    <h2>Simulationsprüfung</h2>
-    <p>Absolviere einen vollständigen A2-Test!</p>
+<!-- SIMULATIONSFÜHRUNG EXAMEN (EXTENDIDO) -->
+<section id="simulation" class="contenido-oculto">
+  <style>
+    /* ===== Estilos locales para la Simulación ===== */
+    .hint {
+      background: rgba(255,255,255,.9);
+      border-left: 5px solid var(--blue);
+      padding: .9rem 1rem; border-radius: 10px; margin: .6rem 0 1rem;
+      font-size: .95rem;
+    }
+    .exam-hud {
+      display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin:.6rem 0 1rem;
+    }
+    .pill {
+      white-space:nowrap; border:2px solid var(--blue); background:#fff; color:var(--text);
+      padding:.45rem .8rem; border-radius:999px; font-weight:700; display:flex; align-items:center; gap:.45rem;
+    }
+    .btn-ghost { border:2px solid var(--coral); background:#fff; color:var(--text); padding:.45rem .8rem; border-radius:10px; font-weight:700; cursor:pointer; }
+    .btn-ghost:active { transform:scale(.98); }
 
-    <div class="exam-section" id="exam-vocab">
-      <h3>1. Wortschatz: Welche Übersetzung passt zum Bild?</h3>
-      <i class="fa-solid fa-car"></i> <span>das Auto</span><br>
-      <input type="radio" name="exam1" value="richtig"> Richtig<br>
-      <input type="radio" name="exam1" value="falsch"> Falsch
+    .exam-card {
+      background: rgba(255,255,255,.94); border-radius: 14px; padding: 1rem;
+      box-shadow: 0 6px 18px var(--shadow); margin-bottom:1rem;
+    }
+    .title-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; }
+    .title-row i { opacity:.9; }
+    .muted { opacity:.85; }
+    .ok { color:#1a7f37; font-weight:700; }
+    .bad { color:#b1002e; font-weight:700; }
+
+    /* Opciones tipo radio */
+    .opts { list-style:none; padding:0; margin:.5rem 0; }
+    .opts li { margin:.35rem 0; }
+    .opts label { display:flex; align-items:flex-start; gap:.55rem; cursor:pointer; }
+
+    /* Gramática nube de opciones */
+    .cloud { display:flex; flex-wrap:wrap; gap:.5rem; margin:.5rem 0; }
+    .chip {
+      border:2px solid var(--grass); background:#fff; border-radius:999px; padding:.35rem .7rem; cursor:pointer; font-weight:700;
+    }
+    .chip.active { background:var(--grass); }
+    .sentence { background:#f7fbff; border:2px dashed var(--blue); border-radius:10px; padding:.6rem .7rem; display:inline-block; }
+    .blank { border-bottom:3px solid var(--coral); min-width: 6ch; display:inline-block; text-align:center; }
+
+    /* Glosario modal (sección exclusiva) */
+    .gloss { border-bottom:2px dotted var(--coral); background: rgba(212,90,86,.08); border-radius:6px; padding:0 .2rem; cursor:pointer; }
+    .modal-exam { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.45); z-index:9999; }
+    .modal-exam.hidden { display:none; }
+    .modal-box {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem; width:min(520px, calc(100% - 2rem));
+      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    }
+    .modal-box h4 { margin:0 0 .3rem; color:var(--blue); }
+    .modal-close { float:right; border:none; background:transparent; font-size:1.4rem; cursor:pointer; }
+
+    /* Resumen / historial */
+    .summary { background:#fff; border-radius:12px; padding: .8rem 1rem; box-shadow:0 6px 18px var(--shadow); }
+    .history { margin-top:.6rem; font-size:.95rem; }
+    .history li { margin:.2rem 0; }
+
+    @media (max-width:600px){
+      .exam-card { padding:.9rem; }
+      .opts li { margin:.25rem 0; }
+    }
+  </style>
+
+  <h2>Simulationsprüfung – Examen de práctica A2</h2>
+  <p class="hint">
+    🎯 Objetivo: integrar <strong>vocabulario + gramática + lectura + expresiones</strong> (nivel A2).  
+    ▸ <strong>Sección 1</strong> (Wortschatz): elige la palabra que coincide con el <em>ícono</em>.  
+    ▸ <strong>Sección 2</strong> (Grammatik): completa la frase tocando 1 opción de la <em>nube</em>.  
+    ▸ <strong>Sección 3</strong> (Lesen): lee el mensaje y responde (3 opciones).  
+    ▸ <strong>Sección 4</strong> (Redemittel): elige la frase que encaja (3 opciones).  
+    💡 Algunas <span class="gloss" data-term="palabras difíciles">palabras difíciles</span> están subrayadas: tócala para ver su significado en español. Tu progreso se guarda automáticamente en este dispositivo.
+  </p>
+
+  <div class="exam-hud">
+    <span class="pill"><i class="fa-solid fa-list-ol"></i> Ítem <span id="ex-pos">1</span> / <span id="ex-total">20</span></span>
+    <span class="pill"><i class="fa-solid fa-star"></i> Puntaje: <span id="ex-score">0</span></span>
+    <button id="ex-prev" class="btn-ghost" type="button">⟵ Anterior</button>
+    <button id="ex-next" class="btn-ghost" type="button">Siguiente ⟶</button>
+    <button id="ex-reset" class="btn-ghost" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+  </div>
+
+  <!-- Contenedor dinámico del ítem -->
+  <div id="exam-container"></div>
+
+  <!-- Controles globales -->
+  <div class="exam-card">
+    <div class="title-row"><i class="fa-solid fa-flag-checkered"></i><strong>Finalizar</strong></div>
+    <p class="muted">Puedes terminar cuando quieras. Verás tu nota y se guardará en el historial.</p>
+    <button class="btn-submit" id="ex-submit" type="button">Prüfung abschließen</button>
+    <p id="exam-result" class="ok" style="display:none;"></p>
+  </div>
+
+  <div class="summary">
+    <div class="title-row"><i class="fa-solid fa-clock-rotate-left"></i><strong>Historial local</strong></div>
+    <ul id="ex-history" class="history"></ul>
+  </div>
+
+  <span class="back-btn" onclick="mostrarSeccion('home')">Volver al inicio</span>
+
+  <!-- Modal glosario -->
+  <div id="gloss-modal-exam" class="modal-exam hidden" role="dialog" aria-modal="true" aria-labelledby="gloss-term-exam" aria-describedby="gloss-def-exam">
+    <div class="modal-box">
+      <button id="gloss-close-exam" class="modal-close" aria-label="Cerrar">×</button>
+      <h4 id="gloss-term-exam">Término</h4>
+      <p id="gloss-def-exam">Definición en español</p>
     </div>
+  </div>
 
-    <div class="exam-section" id="exam-grammar">
-      <h3>2. Grammatik: Ergänze den Satz:</h3>
-      <p>Er ___ jeden Tag zur Schule. (geht)</p>
-      <input type="text" id="exam2" placeholder="Antwort">
-    </div>
+  <script>
+  (function(){
+    const byId = id => document.getElementById(id);
 
-    <div class="exam-section" id="exam-reading">
-      <h3>3. Leseverstehen: Kurznachricht lesen</h3>
-      <p>Max: Hallo! Kommen deine Eltern heute zu Besuch?</p>
-      <p>Sophie: Ja, sie kommen um 18 Uhr. Ich muss aber noch Hausaufgaben machen.</p>
-      <p>Frage: Wann kommen Sophies Eltern?</p>
-      <input type="text" id="exam3" placeholder="Antwort">
-    </div>
+    /* ========= Glosario ========= */
+    const GLOSS = {
+      "Verspätung":"retraso, demora (transporte).",
+      "Einlass":"acceso/entrada al recinto.",
+      "Beginn":"inicio/comienzo.",
+      "Ersatzbus":"bus de reemplazo.",
+      "Eintritt":"entrada (precio).",
+      "Bibliothek":"biblioteca.",
+      "Fahrkarte":"billete de transporte.",
+      "Gleis":"andén/vía (tren).",
+      "Schalter":"ventanilla/mostrador.",
+      "Formular":"formulario.",
+      "Verein":"club/asociación.",
+      "Termin":"cita (médica, etc.).",
+      "Praxis":"consulta/clínica.",
+      "Rezept":"receta médica.",
+      "Kasse":"caja (pago).",
+      "Umkleide":"probador/vestidor.",
+      "Angebot":"oferta/promoción."
+    };
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function highlightGloss(text){
+      const keys = Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+      let out = text;
+      keys.forEach(k=>{
+        const rx = new RegExp(`\\b${escapeRegExp(k)}\\b`,'g');
+        out = out.replace(rx, `<span class="gloss" data-term="${k}">${k}</span>`);
+      });
+      return out;
+    }
+    function attachGlossHandlers(scope){
+      scope.querySelectorAll('.gloss').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          byId('gloss-term-exam').textContent = el.dataset.term;
+          byId('gloss-def-exam').textContent = GLOSS[el.dataset.term] || 'Sin definición registrada.';
+          byId('gloss-modal-exam').classList.remove('hidden');
+        });
+      });
+    }
+    byId('gloss-close-exam').addEventListener('click', ()=> byId('gloss-modal-exam').classList.add('hidden'));
 
-    <div class="exam-section" id="exam-expressions">
-      <h3>4. Redemittel: Fülle ein Gesprächsthema ein</h3>
-      <p>A: "Entschuldigung, ...?"</p>
-      <input type="text" id="exam4" placeholder="Ihre Frage (z.B. Wie spät ist es)">
-    </div>
+    /* ========= Banco de ítems (20) ========= */
+    const ITEMS = [
+      // Ítem 1
+      {
+        vocab: { icon:'fa-bus', q:'Was passt zum Bild?', opts:['der Zug','der Bus','das Fahrrad'], ans:1 },
+        gram : { text:'Gestern ___ wir mit dem Bus nach Hause.', opts:['sind gefahren','haben gefahren','ist gefahren','gehen','fährt','sind gehen','sind gefahrene','wurden fahren','hat gefahren'], ans:0 },
+        read : { text:'Chat: „Kommst du heute mit? Der Film beginnt um 18:30. Ich warte am Eingang.“', q:'Wann beginnt der Film?', opts:['18:00','18:30','18:45'], ans:1 },
+        redm : { ctx:'Taquilla: A: Guten Abend! Was darf es sein? – B: _____', opts:['Zwei Karten für „Abenteuer“, bitte.','Ich wohne neben der Bibliothek.','Der Aufzug ist kaputt.'], ans:0 }
+      },
+      // Ítem 2
+      {
+        vocab: { icon:'fa-bread-slice', q:'Was passt zum Bild?', opts:['das Brötchen','der Käse','die Suppe'], ans:0 },
+        gram : { text:'Morgen ___ ich meinen Freund im Park.', opts:['treffe','trifft','treffen','habe getroffen','getroffen','ging','laufe','besuche','gespielt'], ans:0 },
+        read : { text:'Notiz: „Bitte Hausaufgaben bis Mittwoch abgeben. Raum 204.“', q:'Bis wann abgeben?', opts:['Dienstag','Mittwoch','Donnerstag'], ans:1 },
+        redm : { ctx:'Bäckerei: A: Guten Morgen! Was möchten Sie? – B: _____', opts:['Ich hätte gern zwei Brötchen, bitte.','Die Haltestelle ist dort.','Ich habe Mathe.'], ans:0 }
+      },
+      // Ítem 3
+      {
+        vocab: { icon:'fa-clock', q:'Was passt zum Bild?', opts:['die Uhr','der Kalender','die Straße'], ans:0 },
+        gram : { text:'Wir ___ seit zwei Jahren in Köln.', opts:['wohnen','wohne','wohnt','haben gewohnt','hat gewohnt','sind gewohnt','bleiben','wohnte','werden wohnen'], ans:0 },
+        read : { text:'Aushang: „Bibliothek: heute geöffnet 9–17 Uhr. Rückgabe am Schalter.“', q:'Wann öffnet die Bibliothek?', opts:['8 Uhr','9 Uhr','10 Uhr'], ans:1 },
+        redm : { ctx:'Im Restaurant: A: Sind Sie bereit zu bestellen? – B: _____', opts:['Ja, ich nehme die Tomatensuppe.','Ich brauche Batterien.','Der Bus ist verspätet.'], ans:0 }
+      },
+      // Ítem 4
+      {
+        vocab: { icon:'fa-book', q:'Was passt zum Bild?', opts:['das Buch','die Schule','das Heft'], ans:0 },
+        gram : { text:'Um 8 Uhr ___ der Unterricht.', opts:['beginnt','beginnen','begann','hat beginnen','fängt','ist beginnt','wurde beginnen','ist begonnen','hatte beginnt'], ans:0 },
+        read : { text:'SMS: „Ich komme später. Mein Zug hat 10 Minuten Verspätung.“', q:'Wie spät kommt die Person?', opts:['10 Minuten später','10 Minuten früher','pünktlich'], ans:0 },
+        redm : { ctx:'In der Schule: A: Hast du die Hausaufgaben dabei? – B: _____', opts:['Ja, hier im Heft.','Ich kaufe eine Fahrkarte.','Der Film beginnt um 20 Uhr.'], ans:0 }
+      },
+      // Ítem 5
+      {
+        vocab: { icon:'fa-hospital', q:'Was passt zum Bild?', opts:['der Arzt','das Krankenhaus','die Apotheke'], ans:1 },
+        gram : { text:'Gestern ___ ich krank.', opts:['war','bin','habe gewesen','ist','waren','hat','wurde sein','hatte','sei'], ans:0 },
+        read : { text:'Termin: „Praxis Dr. Klein, Mittwoch 10:20 Uhr. Bitte 10 Minuten früher kommen.“', q:'Wann soll man kommen?', opts:['10:30','10:10','10:20'], ans:1 },
+        redm : { ctx:'In der Apotheke: A: Was brauchen Sie? – B: _____', opts:['Ich brauche Nasentropfen gegen Schnupfen.','Der Zug fährt um 9.','Ich wohne in Köln.'], ans:0 }
+      },
+      // Ítem 6
+      {
+        vocab: { icon:'fa-ticket', q:'Was passt zum Bild?', opts:['die Fahrkarte','der Brief','die Quittung'], ans:0 },
+        gram : { text:'Wir ___ am Sonntag die Großeltern.', opts:['besuchen','besucht','besuche','habe besucht','besucht haben','gesehen','fahren','treffen wir','besuchtet'], ans:0 },
+        read : { text:'Notiz: „Treffen 9:00 am Bahnhof. Regenjacke mitbringen.“', q:'Wo ist das Treffen?', opts:['in der Schule','am Bahnhof','im Bus'], ans:1 },
+        redm : { ctx:'Am Schalter: A: Wohin möchten Sie fahren? – B: _____', opts:['Nach Bremen, bitte einfach.','Ich nehme Suppe.','Das Hemd ist zu klein.'], ans:0 }
+      },
+      // Ítem 7
+      {
+        vocab: { icon:'fa-school', q:'Was passt zum Bild?', opts:['die Schule','der Park','das Theater'], ans:0 },
+        gram : { text:'Wir ___ heute keinen Unterricht.', opts:['haben','hat','sind','hatten','war','bekommen','sein','gibt','gab'], ans:0 },
+        read : { text:'Aushang: „Sport heute in der Halle, nicht auf dem Platz.“', q:'Wo ist Sport heute?', opts:['auf dem Platz','in der Halle','im Park'], ans:1 },
+        redm : { ctx:'Bus-Haltestelle: A: Fährt dieser Bus zum Bahnhof? – B: _____', opts:['Ja, Linie 8 fährt direkt.','Ich hätte gern eine Suppe.','Der Aufzug ist kaputt.'], ans:0 }
+      },
+      // Ítem 8
+      {
+        vocab: { icon:'fa-cheese', q:'Was passt zum Bild?', opts:['die Pizza','der Käse','der Fisch'], ans:1 },
+        gram : { text:'Ich ___ heute keine Zeit.', opts:['habe','hast','hat','bin','sein','hatte','gehabt','habe gehabt','war'], ans:0 },
+        read : { text:'Angebot: „Äpfel 1,99 €/kg. Heute geöffnet bis 21 Uhr.“', q:'Bis wann geöffnet?', opts:['20 Uhr','21 Uhr','22 Uhr'], ans:1 },
+        redm : { ctx:'Im Supermarkt: A: Entschuldigung, was kostet dieses Brot? – B: _____', opts:['2,49 Euro, im Angebot.','Ich wohne im zweiten Stock.','Der Zug ist pünktlich.'], ans:0 }
+      },
+      // Ítem 9
+      {
+        vocab: { icon:'fa-bicycle', q:'Was passt zum Bild?', opts:['das Fahrrad','das Taxi','der Bus'], ans:0 },
+        gram : { text:'Er ___ mit dem Fahrrad zur Arbeit.', opts:['fährt','fahre','fahren','ist gefahren','hat gefahren','läuft','ging','geht gefahren','gefahren ist'], ans:0 },
+        read : { text:'Nachricht: „Ich bin um 18:15 vor dem Kino. Kaufst du die Tickets?“', q:'Wann kommt die Person an?', opts:['18:15','18:30','18:00'], ans:0 },
+        redm : { ctx:'Im Café: A: Möchten Sie etwas trinken? – B: _____', opts:['Ja, ein stilles Wasser, bitte.','Der Bus fährt um 9.','Ich brauche Pflaster.'], ans:0 }
+      },
+      // Ítem 10
+      {
+        vocab: { icon:'fa-house', q:'Was passt zum Bild?', opts:['das Haus','der Stuhl','der Garten'], ans:0 },
+        gram : { text:'Die Kinder ___ im Park.', opts:['spielen','spielt','spielte','hat spielen','sind gespielt','laufen','sitzt','sind spielen','spieltet'], ans:0 },
+        read : { text:'Zettel: „Bitte Müll am Dienstagabend rausstellen.“', q:'Wann soll man den Müll rausstellen?', opts:['Montagabend','Dienstagabend','Mittwochmorgen'], ans:1 },
+        redm : { ctx:'Auf der Straße: A: Entschuldigung, wo ist die Haltestelle? – B: _____', opts:['Geradeaus und dann rechts.','Ich esse Pizza.','Der Aufzug ist defekt.'], ans:0 }
+      },
+      // Ítem 11
+      {
+        vocab: { icon:'fa-suitcase', q:'Was passt zum Bild?', opts:['der Brief','der Rucksack','der Kofferraum'], ans:1 },
+        gram : { text:'Wir ___ um 7 Uhr in der Schule.', opts:['sind','ist','seid','haben','hatten','war','sein','wurden','wäre'], ans:0 },
+        read : { text:'E-Mail: „Büchertausch am Freitag in der Schulbibliothek. Bringt ein gelesenes Buch mit.“', q:'Was soll man mitbringen?', opts:['Ein Heft','Ein gelesenes Buch','Eine Fahrkarte'], ans:1 },
+        redm : { ctx:'In der Postfiliale: A: Wohin geht das Paket? – B: _____', opts:['Nach München, bitte versichert.','Ich nehme die Suppe.','Die Umkleide ist links.'], ans:0 }
+      },
+      // Ítem 12
+      {
+        vocab: { icon:'fa-film', q:'Was passt zum Bild?', opts:['der Film','das Theater','die Kirche'], ans:0 },
+        gram : { text:'Ich ___ nach der Schule Musik.', opts:['höre','hört','hören','habe hören','hörte','bin gehört','spiele','lese','schreibe'], ans:0 },
+        read : { text:'Hinweis Kino: „Einlass ab 18:15. Beginn 18:45. Tickets nur online.“', q:'Wann beginnt der Film?', opts:['18:45','18:15','19:00'], ans:0 },
+        redm : { ctx:'Im Kino: A: Für welchen Film möchten Sie Tickets? – B: _____', opts:['Für „Sternennacht“, zwei Karten, bitte.','Ich wohne in Köln.','Der Aufzug ist außer Betrieb.'], ans:0 }
+      },
+      // Ítem 13
+      {
+        vocab: { icon:'fa-tablets', q:'Was passt zum Bild?', opts:['die Tablette','der Verband','die Spritze'], ans:0 },
+        gram : { text:'Bitte ___ Sie die Versicherungskarte mit.', opts:['bringen','bringt','bringen Sie','nimmst','nehmen','hat gebracht','brachten','mitbringen','mitgebracht'], ans:0 },
+        read : { text:'Praxis: „Nur bis 12 Uhr geöffnet. Rezepte ab 10 Uhr.“', q:'Wann gibt es Rezepte?', opts:['ab 12 Uhr','ab 10 Uhr','ganztägig'], ans:1 },
+        redm : { ctx:'Anmeldung: A: Haben Sie einen Termin? – B: _____', opts:['Ja, um 11 Uhr bei Frau Müller.','Ich suche die Umkleide.','Zwei Brötchen, bitte.'], ans:0 }
+      },
+      // Ítem 14
+      {
+        vocab: { icon:'fa-person-swimming', q:'Was passt zum Bild?', opts:['das Schwimmbad','der Spielplatz','das Museum'], ans:0 },
+        gram : { text:'Im Sommer ___ wir oft im See.', opts:['baden','badet','baden wir','schwimme','schwimmen','hat gebadet','sind gebadet','badeten','gebadet'], ans:0 },
+        read : { text:'Aushang: „Familientag am Sonntag. Kinder zahlen keinen Eintritt.“', q:'Wer zahlt keinen Eintritt?', opts:['Erwachsene','Kinder','Alle'], ans:1 },
+        redm : { ctx:'Im Verein: A: Möchten Sie dem Verein beitreten? – B: _____', opts:['Ja, wo kann ich das Formular ausfüllen?','Ich nehme Kaffee.','Der Zug fährt um 9.'], ans:0 }
+      },
+      // Ítem 15
+      {
+        vocab: { icon:'fa-envelope', q:'Was passt zum Bild?', opts:['der Brief','das Paket','der Ausweis'], ans:0 },
+        gram : { text:'Ich ___ gestern eine E-Mail geschrieben.', opts:['habe','bin','hat','hatte','war','habe geschrieben','schreibt','schreibte','schreibe'], ans:0 },
+        read : { text:'Post: „Die Linie 5 fährt heute nicht. Nutzen Sie Linie 3 oder den Ersatzbus.“', q:'Welche Linie fährt nicht?', opts:['3','5','7'], ans:1 },
+        redm : { ctx:'Am Schalter: A: Brauchen Sie Briefmarken? – B: _____', opts:['Ja, zehn Stück, bitte.','Ich mag Salat.','Die Bahn hat Verspätung.'], ans:0 }
+      },
+      // Ítem 16
+      {
+        vocab: { icon:'fa-shirt', q:'Was passt zum Bild?', opts:['das T-Shirt','der Schuh','die Jacke'], ans:0 },
+        gram : { text:'Kann ich diese Jacke ___?', opts:['anprobieren','probiere an','anproben','tragen','nehmen','kaufen','anziehen','angezogen','anprobiert'], ans:0 },
+        read : { text:'Laden: „Kasse 2 geschlossen. Bitte zu Kasse 3.“', q:'Welche Kasse ist offen?', opts:['Kasse 1','Kasse 3','Kasse 2'], ans:1 },
+        redm : { ctx:'Im Geschäft: A: Kann ich die Jacke anprobieren? – B: _____', opts:['Ja, die Umkleide ist dort links.','Ich nehme Suppe.','Der Film beginnt.'], ans:0 }
+      },
+      // Ítem 17
+      {
+        vocab: { icon:'fa-receipt', q:'Was passt zum Bild?', opts:['die Quittung','die Fahrkarte','die Einladung'], ans:0 },
+        gram : { text:'Wie viel ___ das Ticket?', opts:['kostet','kosten','gekostet','kostet es','hat gekostet','kostetet','kostet man','zahlt','bezahlt'], ans:0 },
+        read : { text:'Zettel: „Hausaufgabe bis Sonntag 20 Uhr in die Plattform hochladen.“', q:'Wann ist die Abgabe?', opts:['Samstag 20 Uhr','Sonntag 20 Uhr','Montag 8 Uhr'], ans:1 },
+        redm : { ctx:'Im Restaurant: A: Hat es Ihnen geschmeckt? – B: _____', opts:['Ja, sehr. Könnten wir bitte die Rechnung bekommen?','Ich wohne in Köln.','Der Bus hält da vorne.'], ans:0 }
+      },
+      // Ítem 18
+      {
+        vocab: { icon:'fa-user-doctor', q:'Was passt zum Bild?', opts:['der Arzt','die Lehrerin','der Fahrer'], ans:0 },
+        gram : { text:'Er ___ heute nicht zur Schule, er ist krank.', opts:['geht','gehe','gegangen','ist gegangen','fährt','bleibt','blieb','geht nicht','ging'], ans:0 },
+        read : { text:'Wetter: „Vormittags sonnig, nachmittags Regen. Bitte Regenjacke.“', q:'Wie ist das Wetter am Vormittag?', opts:['Sonnig','Regen','Schnee'], ans:0 },
+        redm : { ctx:'Auf der Straße: A: Entschuldigung, wo ist die Bibliothek? – B: _____', opts:['Geradeaus und an der Ecke rechts.','Der Aufzug ist kaputt.','Ich brauche Tabletten.'], ans:0 }
+      },
+      // Ítem 19
+      {
+        vocab: { icon:'fa-suitcase', q:'Was passt zum Bild?', opts:['der Koffer','die Tasche','der Stuhl'], ans:0 },
+        gram : { text:'Wir ___ morgen nach Berlin.', opts:['fahren','fahre','fahrt','sind gefahren','hat gefahren','gehen','laufe','fliege','fuhr'], ans:0 },
+        read : { text:'Einladung: „Ich feiere am Samstag um 16 Uhr bei mir zu Hause. Bitte etwas zu trinken mitbringen.“', q:'Wann beginnt die Feier?', opts:['15 Uhr','16 Uhr','17 Uhr'], ans:1 },
+        redm : { ctx:'Einladung: A: Hast du am Samstag Zeit? – B: _____', opts:['Ja, gern! Um wie viel Uhr soll ich kommen?','Ich kaufe Brot.','Der Bus fährt nicht.'], ans:0 }
+      },
+      // Ítem 20
+      {
+        vocab: { icon:'fa-basket-shopping', q:'Was passt zum Bild?', opts:['der Supermarkt','die Metzgerei','das Theater'], ans:0 },
+        gram : { text:'Entschuldigung, ich ___ eine Frage.', opts:['habe','hat','bin','habe gehabt','bekomme','frage','habe Frage','war','hätte'], ans:0 },
+        read : { text:'Aushang Schule: „Der Unterricht findet heute in Raum 105 statt, nicht in Raum 101.“', q:'Wo ist der Unterricht heute?', opts:['Raum 105','Raum 101','fällt aus'], ans:0 },
+        redm : { ctx:'Im Café: A: Möchten Sie noch etwas? – B: _____', opts:['Ja, ein Stück Apfelkuchen, bitte.','Ich wohne im zweiten Stock.','Der Bus kommt um 8.'], ans:0 }
+      }
+    ];
 
-    <button class="btn-submit" onclick="submitExam()">Prüfung abschließen</button>
-    <p id="exam-result" class="result"></p>
+    /* ========= Estado / almacenamiento ========= */
+    const TOTAL = ITEMS.length;
+    let idx = 0;
+    let score = 0;
+    // Respuestas del usuario
+    const state = ITEMS.map(()=>({v:null, g:null, r:null, d:null, checked:false}));
 
-    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
-  </section>
+    // LocalStorage
+    const LS_KEY = 'a2_sim_exam_state_v1';
+    const LS_HISTORY = 'a2_sim_exam_history_v1';
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify({idx, score, state}));
+    }
+    function loadState(){
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return false;
+      try{
+        const obj = JSON.parse(raw);
+        if(!obj || !Array.isArray(obj.state) || obj.state.length!==TOTAL) return false;
+        idx = Math.max(0, Math.min(TOTAL-1, obj.idx||0));
+        score = obj.score||0;
+        obj.state.forEach((s,i)=> state[i] = s);
+        return true;
+      } catch{ return false; }
+    }
+    function pushHistory(finalScore){
+      const raw = localStorage.getItem(LS_HISTORY);
+      const list = raw ? JSON.parse(raw) : [];
+      list.unshift({ when: new Date().toISOString(), score: finalScore, total: TOTAL*4 });
+      localStorage.setItem(LS_HISTORY, JSON.stringify(list.slice(0,20)));
+      renderHistory();
+    }
+    function renderHistory(){
+      const ul = byId('ex-history');
+      const raw = localStorage.getItem(LS_HISTORY);
+      const list = raw ? JSON.parse(raw) : [];
+      if(list.length===0){ ul.innerHTML = '<li class="muted">Sin intentos almacenados.</li>'; return; }
+      ul.innerHTML = list.map(h=>{
+        const d = new Date(h.when);
+        const date = d.toLocaleString();
+        return `<li><i class="fa-solid fa-check"></i> ${date}: <strong>${h.score}</strong> / ${h.total} puntos</li>`;
+      }).join('');
+    }
+
+    /* ========= Render de un ítem ========= */
+    const container = byId('exam-container');
+    function render(){
+      byId('ex-total').textContent = TOTAL;
+      byId('ex-pos').textContent = idx+1;
+      byId('ex-score').textContent = score;
+
+      const it = ITEMS[idx];
+      const st = state[idx];
+
+      const nameV = `v_${idx}`, nameR = `r_${idx}`, nameD = `d_${idx}`;
+
+      const vocabHTML = `
+        <div class="exam-card">
+          <div class="title-row"><i class="fa-solid fa-language"></i><strong>1) Wortschatz</strong></div>
+          <p class="muted">${highlightGloss(it.vocab.q)}</p>
+          <p style="font-size:2rem;"><i class="fa-solid ${it.vocab.icon}"></i></p>
+          <ul class="opts">
+            ${it.vocab.opts.map((o,i)=>`
+              <li><label><input type="radio" name="${nameV}" value="${i}" ${st.v==i?'checked':''}> ${String.fromCharCode(97+i)}) ${highlightGloss(o)}</label></li>
+            `).join('')}
+          </ul>
+          <p id="fb-v" class="muted"></p>
+        </div>
+      `;
+
+      const gramHTML = `
+        <div class="exam-card">
+          <div class="title-row"><i class="fa-solid fa-pen-nib"></i><strong>2) Grammatik</strong></div>
+          <p class="muted">Toca una opción de la nube para completar la frase.</p>
+          <p class="sentence">${highlightGloss(it.gram.text.replace('___', `<span id="gblank" class="blank">${st.g!=null ? it.gram.opts[st.g] : '&nbsp;'}</span>`))}</p>
+          <div class="cloud">
+            ${it.gram.opts.map((o,i)=>`
+              <button type="button" class="chip ${st.g==i?'active':''}" data-g="${i}">${highlightGloss(o)}</button>
+            `).join('')}
+            <button type="button" class="btn-ghost" id="g-clear"><i class="fa-solid fa-eraser"></i> Borrar</button>
+          </div>
+          <p id="fb-g" class="muted"></p>
+        </div>
+      `;
+
+      const readHTML = `
+        <div class="exam-card">
+          <div class="title-row"><i class="fa-solid fa-book-open"></i><strong>3) Lesen</strong></div>
+          <p>${highlightGloss(it.read.text)}</p>
+          <p class="muted" style="margin-top:.4rem;">${highlightGloss(it.read.q)}</p>
+          <ul class="opts">
+            ${it.read.opts.map((o,i)=>`
+              <li><label><input type="radio" name="${nameR}" value="${i}" ${st.r==i?'checked':''}> ${String.fromCharCode(97+i)}) ${highlightGloss(o)}</label></li>
+            `).join('')}
+          </ul>
+          <p id="fb-r" class="muted"></p>
+        </div>
+      `;
+
+      const redmHTML = `
+        <div class="exam-card">
+          <div class="title-row"><i class="fa-solid fa-comments"></i><strong>4) Redemittel</strong></div>
+          <p>${highlightGloss(it.redm.ctx)}</p>
+          <ul class="opts">
+            ${it.redm.opts.map((o,i)=>`
+              <li><label><input type="radio" name="${nameD}" value="${i}" ${st.d==i?'checked':''}> ${String.fromCharCode(97+i)}) ${highlightGloss(o)}</label></li>
+            `).join('')}
+          </ul>
+          <p id="fb-d" class="muted"></p>
+        </div>
+      `;
+
+      container.innerHTML = vocabHTML + gramHTML + readHTML + redmHTML + `
+        <div class="exam-card">
+          <div class="title-row"><i class="fa-solid fa-circle-check"></i><strong>Comprobar este ítem</strong></div>
+          <p class="muted">Puedes verificar tus respuestas del ítem actual. Sumará a tu puntaje.</p>
+          <button type="button" class="btn-submit" id="check-item">Comprobar ítem</button>
+          <p id="fb-item" class="muted"></p>
+        </div>
+      `;
+
+      // Handlers de selección
+      // Vocabulario
+      container.querySelectorAll(`input[name="${nameV}"]`).forEach(r=>{
+        r.addEventListener('change', ()=> { state[idx].v = +r.value; saveState(); });
+      });
+      // Gramática
+      container.querySelectorAll('.chip').forEach(ch=>{
+        ch.addEventListener('click', ()=>{
+          container.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+          ch.classList.add('active');
+          const gi = +ch.dataset.g;
+          state[idx].g = gi;
+          const blank = byId('gblank');
+          blank.innerHTML = ch.textContent;
+          saveState();
+        });
+      });
+      const gClear = byId('g-clear');
+      gClear.addEventListener('click', ()=>{
+        state[idx].g = null;
+        container.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+        byId('gblank').innerHTML = '&nbsp;';
+        saveState();
+      });
+
+      // Lectura
+      container.querySelectorAll(`input[name="${nameR}"]`).forEach(r=>{
+        r.addEventListener('change', ()=> { state[idx].r = +r.value; saveState(); });
+      });
+      // Redemittel
+      container.querySelectorAll(`input[name="${nameD}"]`).forEach(r=>{
+        r.addEventListener('change', ()=> { state[idx].d = +r.value; saveState(); });
+      });
+
+      // Comprobar ítem
+      byId('check-item').addEventListener('click', ()=>{
+        const it = ITEMS[idx], st = state[idx];
+        let gained = 0;
+
+        const fbv = byId('fb-v'), fbg = byId('fb-g'), fbr = byId('fb-r'), fbd = byId('fb-d');
+        // Vocabulario
+        if(st.v==null){ fbv.textContent='(Wortschatz) Selecciona una opción.'; fbv.className='bad'; }
+        else if(st.v===it.vocab.ans){ fbv.textContent='(Wortschatz) ¡Correcto!'; fbv.className='ok'; gained++; }
+        else { fbv.textContent=`(Wortschatz) Incorrecto. Respuesta: ${it.vocab.opts[it.vocab.ans]}`; fbv.className='bad'; }
+
+        // Gramática
+        if(st.g==null){ fbg.textContent='(Grammatik) Elige una opción.'; fbg.className='bad'; }
+        else if(st.g===it.gram.ans){ fbg.textContent='(Grammatik) ¡Correcto!'; fbg.className='ok'; gained++; }
+        else { fbg.textContent=`(Grammatik) Incorrecto. Respuesta: ${it.gram.opts[it.gram.ans]}`; fbg.className='bad'; }
+
+        // Lectura
+        if(st.r==null){ fbr.textContent='(Lesen) Selecciona una opción.'; fbr.className='bad'; }
+        else if(st.r===it.read.ans){ fbr.textContent='(Lesen) ¡Correcto!'; fbr.className='ok'; gained++; }
+        else { fbr.textContent=`(Lesen) Incorrecto. Respuesta: ${it.read.opts[it.read.ans]}`; fbr.className='bad'; }
+
+        // Redemittel
+        if(st.d==null){ fbd.textContent='(Redemittel) Selecciona una opción.'; fbd.className='bad'; }
+        else if(st.d===it.redm.ans){ fbd.textContent='(Redemittel) ¡Correcto!'; fbd.className='ok'; gained++; }
+        else { fbd.textContent=`(Redemittel) Incorrecto. Respuesta: ${it.redm.opts[it.redm.ans]}`; fbd.className='bad'; }
+
+        // actualizar puntaje solo la primera vez que se corrige este ítem
+        const fbitem = byId('fb-item');
+        if(!st.checked){
+          score += gained;
+          st.checked = true;
+          fbitem.textContent = `Puntos obtenidos en este ítem: ${gained} / 4.`;
+          fbitem.className = gained>=3 ? 'ok' : 'muted';
+        } else {
+          fbitem.textContent = 'Este ítem ya fue calificado. (Puedes revisar las respuestas, pero el puntaje no cambia.)';
+          fbitem.className = 'muted';
+        }
+        byId('ex-score').textContent = score;
+        saveState();
+      });
+
+      // Activar glosario
+      attachGlossHandlers(container);
+    }
+
+    /* ========= Navegación ========= */
+    byId('ex-prev').addEventListener('click', ()=>{ idx = (idx-1+TOTAL)%TOTAL; saveState(); render(); window.scrollTo({top: container.offsetTop-80, behavior:'smooth'}); });
+    byId('ex-next').addEventListener('click', ()=>{ idx = (idx+1)%TOTAL; saveState(); render(); window.scrollTo({top: container.offsetTop-80, behavior:'smooth'}); });
+    byId('ex-reset').addEventListener('click', ()=>{
+      if(!confirm('¿Reiniciar examen? Se borrará el progreso guardado.')) return;
+      for(let i=0;i<TOTAL;i++) state[i]={v:null,g:null,r:null,d:null,checked:false};
+      idx = 0; score = 0; saveState(); render();
+    });
+
+    /* ========= Finalizar ========= */
+    byId('ex-submit').addEventListener('click', ()=>{
+      const max = TOTAL*4;
+      const msg = `¡Examen terminado! Puntaje: ${score} / ${max}`;
+      const res = byId('exam-result');
+      res.textContent = msg;
+      res.style.display = 'block';
+      pushHistory(score);
+      saveState(); // deja última foto del estado
+      window.scrollTo({top: res.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+    });
+
+    /* ========= Init ========= */
+    // aplicar glosario a la cabecera
+    attachGlossHandlers(document.getElementById('simulation'));
+
+    // Cargar estado si existe
+    loadState();
+    renderHistory();
+    render();
+  })();
+  </script>
+</section>
+
 
   <script>
     function mostrarSeccion(id) {
@@ -2832,6 +3328,7 @@
   </script>
 </body>
 </html>
+
 
 
 
