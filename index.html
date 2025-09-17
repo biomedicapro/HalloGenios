@@ -62,7 +62,7 @@
       text-shadow: 1px 1px 4px var(--shadow);
     }
     nav {
-      display: flex; align-items: center; gap: 1.5rem;
+      display: flex; align-items: center; gap: 1.2rem;
       z-index: 1;
     }
     nav a {
@@ -72,6 +72,7 @@
       font-weight: 600;
       padding: .5rem;
       transition: color .3s;
+      cursor: pointer;
     }
     nav a::after {
       content: '';
@@ -86,16 +87,7 @@
     nav a:hover::after {
       width: 100%;
     }
-    .menu-toggle {
-      display: none;
-      z-index: 2;
-    }
-    .menu-toggle span {
-      display: block; width: 28px; height: 3px; margin: 5px 0;
-      background: var(--white);
-      transition: transform .3s, opacity .3s;
-    }
-    /* Formas decorativas en header */
+    /* ===== HEADER SHAPES ===== */
     .shape-circle {
       position: absolute;
       border-radius: 50%;
@@ -156,7 +148,7 @@
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    /* ===== MÓDULOS ===== */
+    /* ===== MODULE CARDS ===== */
     main { padding: 4rem 1rem; max-width: 1200px; margin: 0 auto 4rem; }
     .modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 2.5rem; }
     .card {
@@ -172,7 +164,10 @@
     .card.vocab { background: var(--blue); color: var(--white);}    
     .card.grammar{ background: var(--amber); color: var(--text);}    
     .card.test   { background: var(--coral); color: var(--white);}    
-    .card.sim    { background: var(--blue); color: var(--white);}    
+    .card.sim    { background: var(--blue); color: var(--white);}
+    .card.lesen { background: var(--grass); color: var(--white);}
+    .card.redemittel { background: var(--coral); color: var(--white);}
+    .card.quiz { background: var(--amber); color: var(--text);}
     .card .icon  { font-size:3.5rem;margin-bottom:1rem;transition:transform .3s;}    
     .card:hover .icon { transform:rotate(20deg) scale(1.1);}    
     .card h3     { font-size:1.6rem;margin-bottom:.6rem;text-shadow:1px 1px 4px var(--shadow);}    
@@ -181,7 +176,75 @@
     .card .btn:hover { transform:translateY(-2px);background:var(--coral);color:var(--white);}    
     .card .btn .fa-arrow-right { transition:transform .3s; }    
     .card .btn:hover .fa-arrow-right { transform:translateX(4px);}    
-    @media(max-width:600px){ .hero-content h1{font-size:2.2rem;} .hero-content p{font-size:1rem;} }
+
+    /* ===== HIDDEN SECTIONS ===== */
+    .contenido-oculto { display: none; padding: 2rem; max-width: 900px; margin: 0 auto; }
+    .contenido-oculto h2 { margin-bottom: 1rem; color: var(--blue); }
+    .back-btn {
+      margin-top: 2rem;
+      display: inline-block;
+      padding: .6rem 1.2rem;
+      background: var(--coral);
+      color: var(--white);
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-btn:hover { background: var(--blue); }
+
+    /* ===== FLASHCARDS ===== */
+    .flashcard-container {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+    }
+    .flashcard {
+      background: var(--white); border: 2px solid var(--blue);
+      border-radius: 10px; width: 120px; height: 120px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative; 
+      transition: transform .3s;
+    }
+    .flashcard:hover { transform: scale(1.05); }
+    .flashcard .word {
+      position: absolute; bottom: 10px;
+      font-size: 0.9rem; font-weight: bold;
+      color: var(--text);
+      display: none;
+    }
+    .flashcard.show .word { display: block; }
+    .flashcard i {
+      font-size: 2.5rem; color: var(--blue);
+    }
+    /* ===== DRAG & DROP ===== */
+    .dnd-container { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .dnd-zone, .dnd-source {
+      display: flex; gap: 0.5rem; padding: 1rem;
+    }
+    .dnd-zone { min-height: 40px; border: 2px dashed var(--blue); padding: 1rem; width: 100%; }
+    .dnd-zone.empty { opacity: 0.3; }
+    .dnd-source .dnd-item, .dnd-zone .dnd-item {
+      background: var(--white); border: 2px solid var(--coral);
+      padding: 0.5rem 1rem; border-radius: 8px;
+      cursor: grab;
+    }
+
+    /* ===== QUIZ ===== */
+    .quiz-question { margin-bottom: 1rem; }
+    .quiz-question p { margin-bottom: 0.5rem; }
+    .quiz-options { list-style: none; padding: 0; }
+    .quiz-options li { margin: 0.5rem 0; }
+    .quiz-options li label { cursor: pointer; }
+    .btn-submit {
+      margin-top: 1rem; padding: 0.5rem 1rem;
+      background: var(--blue); color: var(--white);
+      border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+    }
+    .btn-submit:hover { background: var(--coral); }
+    /* ===== EXAM ===== */
+    .exam-section { margin-bottom: 2rem; }
+    .exam-section h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .result { font-size: 1.2rem; font-weight: bold; margin-top: 1rem; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
@@ -193,70 +256,434 @@
       <span>HalloGenios</span>
     </div>
     <nav>
-      <a href="#">Startseite</a>
-      <a href="#">Vokabeln</a>
-      <a href="#">Übungen</a>
-      <a href="#">Tests</a>
+      <a onclick="mostrarSeccion('home')">Startseite</a>
+      <a onclick="mostrarSeccion('vokabeln')">Vokabeln</a>
+      <a onclick="mostrarSeccion('grammatik')">Grammatik</a>
+      <a onclick="mostrarSeccion('lesen')">Leseverstehen</a>
+      <a onclick="mostrarSeccion('redemittel')">Redemittel</a>
+      <a onclick="mostrarSeccion('quiz')">Quiz-Modus</a>
+      <a onclick="mostrarSeccion('simulation')">Simulationsprüfung</a>
     </nav>
-    <div class="menu-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
   </header>
-  <section class="hero">
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="hero-content">
-      <h1>Herzlich willkommen auf unserer Webseite!</h1>
-      <p>Diese Seite ist für Schüler gedacht, die sich spielerisch auf die A2-Prüfung in Deutsch vorbereiten möchten. Hier kannst du neues Vokabular mit Bildern lernen, dein Gedächtnis trainieren und mit Übungstests dein Wissen testen. Viel Spaß beim Lernen!</p>
+
+  <!-- HOME -->
+  <section id="home">
+    <div class="hero">
+      <div class="cloud"></div>
+      <div class="cloud"></div>
+      <div class="cloud"></div>
+      <div class="hero-content">
+        <h1>Herzlich willkommen auf unserer Webseite!</h1>
+        <p>Diese Seite ist für Schüler gedacht, die sich spielerisch auf die A2-Prüfung in Deutsch vorbereiten möchten. Hier kannst du neues Vokabular mit Bildern lernen, dein Gedächtnis trainieren und mit Übungstests dein Wissen testen. Viel Spaß beim Lernen!</p>
+      </div>
     </div>
+    <main>
+      <div class="modules">
+        <div class="card vocab" onclick="mostrarSeccion('vokabeln')">
+          <i class="fa-solid fa-language icon"></i>
+          <h3>Vokabeln lernen</h3>
+          <p>Entdecke neue Wörter mit bunten Bildern und Spielen.</p>
+          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="card grammar" onclick="mostrarSeccion('grammatik')">
+          <i class="fa-solid fa-book-open icon"></i>
+          <h3>Grammatik üben</h3>
+          <p>Lerne Zeiten, Fälle und Präpositionen durch interaktive Rätsel.</p>
+          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="card lesen" onclick="mostrarSeccion('lesen')">
+          <i class="fa-solid fa-book icon"></i>
+          <h3>Leseverstehen</h3>
+          <p>Verbessere dein Textverständnis mit Kurzgeschichten und Fragen.</p>
+          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="card redemittel" onclick="mostrarSeccion('redemittel')">
+          <i class="fa-solid fa-comment-dots icon"></i>
+          <h3>Redemittel</h3>
+          <p>Lerne nützliche Ausdrücke für Alltag und Prüfungen.</p>
+          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="card quiz" onclick="mostrarSeccion('quiz')">
+          <i class="fa-solid fa-gamepad icon"></i>
+          <h3>Quiz-Modus</h3>
+          <p>Teste dein Wissen spielerisch mit unterhaltsamen Quiz.</p>
+          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+        <div class="card test" onclick="mostrarSeccion('simulation')">
+          <i class="fa-solid fa-clipboard-list icon"></i>
+          <h3>Simulationsprüfung</h3>
+          <p>Erlebe das Prüfungsgefühl im realistischen Testmodus unter Zeitdruck.</p>
+          <button class="btn">Los geht’s <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </main>
   </section>
-  <main>
-    <div class="modules">
-      <div class="card vocab">
-        <i class="fa-solid fa-language icon"></i>
-        <h3>Vokabeln lernen</h3>
-        <p>Entdecke neue Wörter mit bunten Bildern und Spielen.</p>
-   class="btn" target="_blank" rel="noopener noreferrer">
-   Los geht’s <i class="fa-solid fa-arrow-right"></i>
-</a>
+
+  <!-- VOCABULARY FLASHCARDS -->
+  <section id="vokabeln" class="contenido-oculto">
+    <h2>Vokabeln lernen</h2>
+    <p>Lerne 200 wichtige Wörter mit unseren interaktiven Flashcards!</p>
+    <div class="flashcard-container">
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-house"></i>
+        <span class="word">das Haus</span>
       </div>
-<div class="card grammar">
-  <i class="fa-solid fa-book-open icon"></i>
-  <h3>Grammatik üben</h3>
-  <p>Lerne Zeiten, Fälle und Präpositionen durch interaktive Rätsel.</p>
-  <a href="https://biomedicapro.github.io/grammatik_-ben/" 
-     class="btn" target="_blank" rel="noopener noreferrer">
-     Los geht’s <i class="fa-solid fa-arrow-right"></i>
-  </a>
-</div>
-
-
-
-
-<div class="card test">
-  <i class="fa-solid fa-clipboard-list icon"></i>
-  <h3>Übungstests</h3>
-  <p>Teste dein Wissen in kurzen Quizzes mit Echtzeit-Feedback.</p>
-  <a href="https://biomedicapro.github.io/ubungstests/" 
-     class="btn" target="_blank" rel="noopener noreferrer">
-     Los geht’s <i class="fa-solid fa-arrow-right"></i>
-  </a>
-</div>
-
-
-      <div class="card sim">
-        <i class="fa-solid fa-stopwatch icon"></i>
-        <h3>Simulationsprüfung</h3>
-        <p>Erlebe das Prüfungsgefühl im realistischen Testmodus unter Zeitdruck.</p>
-<a href="https://bfu.goethe.de/a1_sd1/hoeren.php" 
-   class="btn" target="_blank" rel="noopener noreferrer">
-   Los geht’s <i class="fa-solid fa-arrow-right"></i>
-</a>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-car"></i>
+        <span class="word">das Auto</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-bus"></i>
+        <span class="word">der Bus</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-shop"></i>
+        <span class="word">der Supermarkt</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-utensils"></i>
+        <span class="word">das Essen</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-film"></i>
+        <span class="word">der Film</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-dog"></i>
+        <span class="word">der Hund</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-book-open"></i>
+        <span class="word">das Buch</span>
       </div>
     </div>
-  </main>
+    <p>Tipp: Klicke auf eine Karte, um das Wort anzuzeigen oder zu verbergen.</p>
+    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
+  </section>
+
+  <!-- GRAMMATIK ÜBEN -->
+  <section id="grammatik" class="contenido-oculto">
+    <h2>Grammatik interaktiv</h2>
+    <p>Verbessere deine Deutschkenntnisse mit spannenden Übungen!</p>
+
+    <h3>1. Sätze bilden (Drag & Drop)</h3>
+    <p>Ziehe die Wörter in die richtige Reihenfolge.</p>
+    <div class="dnd-container">
+      <div class="dnd-zone" id="zone1"></div>
+      <div class="dnd-zone" id="zone2"></div>
+      <div class="dnd-zone" id="zone3"></div>
+      <div class="dnd-source">
+        <div class="dnd-item" draggable="true">ich</div>
+        <div class="dnd-item" draggable="true">Fußball</div>
+        <div class="dnd-item" draggable="true">spiele</div>
+      </div>
+      <button class="btn-submit" onclick="checkSentence()">Überprüfen</button>
+      <p id="dnd-result"></p>
+    </div>
+
+    <h3>2. Multiple Choice</h3>
+    <p>Wähle das richtige Wort:</p>
+    <div class="quiz-question">
+      <p>Ich ___ ein Buch.</p>
+      <ul class="quiz-options">
+        <li><label><input type="radio" name="q2" value="a"> a) lesen</label></li>
+        <li><label><input type="radio" name="q2" value="b"> b) lese</label></li>
+        <li><label><input type="radio" name="q2" value="c"> c) liest</label></li>
+      </ul>
+      <button class="btn-submit" onclick="checkMC('q2', 'b', 'q2-result')">Überprüfen</button>
+      <p id="q2-result"></p>
+    </div>
+
+    <h3>3. Lückentext</h3>
+    <p>Fülle das fehlende Wort ein:</p>
+    <div class="quiz-question">
+      <p>Ich ___ 12 Jahre alt.</p>
+      <input type="text" id="fill1" placeholder="Antwort">
+      <button class="btn-submit" onclick="checkFill('fill1', 'bin', 'fill1-result')">Überprüfen</button>
+      <p id="fill1-result"></p>
+    </div>
+
+    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
+  </section>
+
+  <!-- LESEVERSTEHEN -->
+  <section id="lesen" class="contenido-oculto">
+    <h2>Lesen und Verstehen</h2>
+    <p>Übe dein Textverständnis mit kurzen Nachrichten und Bildern.</p>
+
+    <h3>Mini-Text</h3>
+    <p><em>Liebe Anna, kommst du morgen zum Fußballtraining?</em></p>
+    <p>Um was geht es in dieser Nachricht?</p>
+    <ul>
+      <li><input type="radio" name="lesen1" value="a"> a) Einladung zum Fußballtraining</li>
+      <li><input type="radio" name="lesen1" value="b"> b) Frage nach dem Fußballtraining</li>
+      <li><input type="radio" name="lesen1" value="c"> c) Grüße aus dem Fußballtraining</li>
+    </ul>
+    <button class="btn-submit" onclick="checkMC('lesen1', 'b', 'lesen1-result')">Überprüfen</button>
+    <p id="lesen1-result"></p>
+
+    <h3>Bilder + Text</h3>
+    <p><i class="fa-solid fa-ticket"></i> Der Kinofilm "Abenteuer im Wald" beginnt um 18:30 Uhr.</p>
+    <p>Frage: Wann beginnt der Film?</p>
+    <button class="btn-submit" onclick="alert('18:30 Uhr')">Antwort anzeigen</button>
+
+    <h3>Wahr/Falsch</h3>
+    <p>"Das Abenteuer im Wald ist ein Kinofilm."</p>
+    <ul>
+      <li><input type="radio" name="vf1" value="true"> Wahr</li>
+      <li><input type="radio" name="vf1" value="false"> Falsch</li>
+    </ul>
+    <button class="btn-submit" onclick="checkTrueFalse('vf1', true, 'vf1-result')">Überprüfen</button>
+    <p id="vf1-result"></p>
+
+    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
+  </section>
+
+  <!-- REDEMITTEL -->
+  <section id="redemittel" class="contenido-oculto">
+    <h2>Redemittel üben</h2>
+    <p>Lerne nützliche Sätze für den Alltag und Prüfungssituationen.</p>
+
+    <h3>Flashcards</h3>
+    <div class="flashcard-container">
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-school"></i>
+        <span class="word">In der Schule: Ich habe meine Hausaufgaben nicht gemacht.</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-store"></i>
+        <span class="word">Im Supermarkt: Kann ich mit Karte zahlen?</span>
+      </div>
+      <div class="flashcard" onclick="this.classList.toggle('show')">
+        <i class="fa-solid fa-bus"></i>
+        <span class="word">An der Bushaltestelle: Fährt dieser Bus nach Berlin?</span>
+      </div>
+    </div>
+    <p>Tipp: Klicke auf die Karten, um die Redemittel zu sehen.</p>
+
+    <h3>Dialog ergänzen</h3>
+    <p>A: "Guten Tag! Wie kann ich Ihnen helfen?"</p>
+    <p>B: "_____"</p>
+    <ul>
+      <li><input type="radio" name="dlg1" value="a"> a) Mir geht es gut.</li>
+      <li><input type="radio" name="dlg1" value="b"> b) Ich habe zwei Tickets bestellt.</li>
+      <li><input type="radio" name="dlg1" value="c"> c) Ich möchte bezahlen.</li>
+    </ul>
+    <button class="btn-submit" onclick="checkMC('dlg1', 'c', 'dlg1-result')">Überprüfen</button>
+    <p id="dlg1-result"></p>
+
+    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
+  </section>
+
+  <!-- QUIZ-MODUS -->
+  <section id="quiz" class="contenido-oculto">
+    <h2>Quiz-Modus</h2>
+    <p>Teste dein Wissen schnell und spielerisch!</p>
+
+    <div id="quiz-content">
+      <div class="quiz-question">
+        <p>1. Wie heißt "Katze" auf Deutsch?</p>
+        <ul class="quiz-options">
+          <li><label><input type="radio" name="quizQ1" value="a"> a) der Hund</label></li>
+          <li><label><input type="radio" name="quizQ1" value="b"> b) die Katze</label></li>
+          <li><label><input type="radio" name="quizQ1" value="c"> c) die Maus</label></li>
+        </ul>
+      </div>
+      <div class="quiz-question">
+        <p>2. "Ich gehe ___ Schule."</p>
+        <ul class="quiz-options">
+          <li><label><input type="radio" name="quizQ2" value="a"> a) in der</label></li>
+          <li><label><input type="radio" name="quizQ2" value="b"> b) zur</label></li>
+          <li><label><input type="radio" name="quizQ2" value="c"> c) zum</label></li>
+        </ul>
+      </div>
+      <div class="quiz-question">
+        <p>3. "Heute ist Samstag." - Wahr oder Falsch?</p>
+        <ul class="quiz-options">
+          <li><label><input type="radio" name="quizQ3" value="true"> Wahr</label></li>
+          <li><label><input type="radio" name="quizQ3" value="false"> Falsch</label></li>
+        </ul>
+      </div>
+      <button class="btn-submit" onclick="checkQuizAnswers()">Ergebnisse anzeigen</button>
+      <p id="quiz-result" class="result"></p>
+    </div>
+
+    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
+  </section>
+
+  <!-- SIMULATIONSFÜHRUNG EXAMEN -->
+  <section id="simulation" class="contenido-oculto">
+    <h2>Simulationsprüfung</h2>
+    <p>Absolviere einen vollständigen A2-Test!</p>
+
+    <div class="exam-section" id="exam-vocab">
+      <h3>1. Wortschatz: Welche Übersetzung passt zum Bild?</h3>
+      <i class="fa-solid fa-car"></i> <span>das Auto</span><br>
+      <input type="radio" name="exam1" value="richtig"> Richtig<br>
+      <input type="radio" name="exam1" value="falsch"> Falsch
+    </div>
+
+    <div class="exam-section" id="exam-grammar">
+      <h3>2. Grammatik: Ergänze den Satz:</h3>
+      <p>Er ___ jeden Tag zur Schule. (geht)</p>
+      <input type="text" id="exam2" placeholder="Antwort">
+    </div>
+
+    <div class="exam-section" id="exam-reading">
+      <h3>3. Leseverstehen: Kurznachricht lesen</h3>
+      <p>Max: Hallo! Kommen deine Eltern heute zu Besuch?</p>
+      <p>Sophie: Ja, sie kommen um 18 Uhr. Ich muss aber noch Hausaufgaben machen.</p>
+      <p>Frage: Wann kommen Sophies Eltern?</p>
+      <input type="text" id="exam3" placeholder="Antwort">
+    </div>
+
+    <div class="exam-section" id="exam-expressions">
+      <h3>4. Redemittel: Fülle ein Gesprächsthema ein</h3>
+      <p>A: "Entschuldigung, ...?"</p>
+      <input type="text" id="exam4" placeholder="Ihre Frage (z.B. Wie spät ist es)">
+    </div>
+
+    <button class="btn-submit" onclick="submitExam()">Prüfung abschließen</button>
+    <p id="exam-result" class="result"></p>
+
+    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
+  </section>
+
+  <script>
+    function mostrarSeccion(id) {
+      document.querySelectorAll("section").forEach(sec => sec.style.display = "none");
+      document.getElementById(id).style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Drag and Drop für Grammatik
+    const items = document.querySelectorAll('.dnd-item');
+    items.forEach(item => {
+      item.addEventListener('dragstart', dragStart);
+    });
+    const zones = document.querySelectorAll('.dnd-zone');
+    zones.forEach(zone => {
+      zone.addEventListener('dragover', allowDrop);
+      zone.addEventListener('drop', drop);
+    });
+    function dragStart(event) {
+      event.dataTransfer.setData("text", event.target.innerText);
+    }
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+    function drop(event) {
+      event.preventDefault();
+      const word = event.dataTransfer.getData("text");
+      if (event.target.classList.contains('dnd-zone') && event.target.childElementCount === 0) {
+        const item = document.createElement('div');
+        item.className = 'dnd-item';
+        item.innerText = word;
+        event.target.appendChild(item);
+        // Remove word from source
+        items.forEach(i => {
+          if (i.innerText === word) i.style.visibility = 'hidden';
+        });
+      }
+    }
+    function checkSentence() {
+      const words = [];
+      zones.forEach(zone => {
+        if (zone.firstChild) words.push(zone.firstChild.textContent);
+      });
+      const resultElem = document.getElementById('dnd-result');
+      if (words.join(' ') === 'ich spiele Fußball') {
+        resultElem.textContent = 'Richtig! Gut gemacht!';
+        resultElem.style.color = 'green';
+      } else {
+        resultElem.textContent = 'Falsch. Versuche es noch einmal!';
+        resultElem.style.color = 'red';
+      }
+    }
+
+    function checkMC(name, correctValue, resultId) {
+      const options = document.getElementsByName(name);
+      let selected;
+      options.forEach(opt => { if (opt.checked) selected = opt.value; });
+      const resultElem = document.getElementById(resultId);
+      if (!selected) {
+        resultElem.textContent = 'Bitte wähle eine Antwort.';
+        resultElem.style.color = 'orange';
+      } else if (selected === correctValue) {
+        resultElem.textContent = 'Richtig!';
+        resultElem.style.color = 'green';
+      } else {
+        resultElem.textContent = 'Falsch.';
+        resultElem.style.color = 'red';
+      }
+    }
+    function checkFill(inputId, answer, resultId) {
+      const val = document.getElementById(inputId).value.trim().toLowerCase();
+      const resultElem = document.getElementById(resultId);
+      if (!val) {
+        resultElem.textContent = 'Bitte einen Wert eingeben.';
+        resultElem.style.color = 'orange';
+      } else if (val === answer) {
+        resultElem.textContent = 'Richtig!';
+        resultElem.style.color = 'green';
+      } else {
+        resultElem.textContent = 'Falsch.';
+        resultElem.style.color = 'red';
+      }
+    }
+    function checkTrueFalse(name, correctBool, resultId) {
+      const options = document.getElementsByName(name);
+      let selected;
+      options.forEach(opt => { if (opt.checked) selected = opt.value; });
+      const resultElem = document.getElementById(resultId);
+      if (!selected) {
+        resultElem.textContent = 'Bitte wähle aus.';
+        resultElem.style.color = 'orange';
+      } else if ((selected === 'true') === correctBool) {
+        resultElem.textContent = 'Wahr!';
+        resultElem.style.color = 'green';
+      } else {
+        resultElem.textContent = 'Falsch.';
+        resultElem.style.color = 'red';
+      }
+    }
+
+    function checkQuizAnswers() {
+      let score = 0;
+      const q1 = document.querySelector('input[name="quizQ1"]:checked');
+      const q2 = document.querySelector('input[name="quizQ2"]:checked');
+      const q3 = document.querySelector('input[name="quizQ3"]:checked');
+      if(q1 && q1.value === 'b') score++;
+      if(q2 && q2.value === 'b') score++;
+      if(q3 && q3.value === 'false') score++;
+      const resultElem = document.getElementById('quiz-result');
+      resultElem.textContent = 'Du hast ' + score + ' von 3 Punkten erreicht.';
+    }
+
+    // Simulationsprüfung
+    function submitExam() {
+      let total = 0, correct = 0;
+      const exam1 = document.querySelector('input[name="exam1"]:checked');
+      if (exam1 && exam1.value === 'richtig') correct++;
+      total++;
+      const exam2 = document.getElementById('exam2').value.trim().toLowerCase();
+      if (exam2 === 'geht') correct++;
+      total++;
+      const exam3 = document.getElementById('exam3').value.trim();
+      if (exam3 === '18 Uhr' || exam3 === '18 Uhr.') correct++;
+      total++;
+      const exam4 = document.getElementById('exam4').value.toLowerCase();
+      if (exam4.includes('wie spät')) correct++;
+      total++;
+      const resultElem = document.getElementById('exam-result');
+      resultElem.textContent = 'Dein Ergebnis: ' + correct + ' von ' + total + ' richtig.';
+      const history = JSON.parse(localStorage.getItem('examhistory') || '[]');
+      history.push({score: correct + '/' + total, date: new Date().toLocaleString()});
+      localStorage.setItem('examhistory', JSON.stringify(history));
+    }
+
+    // Initial load
+    mostrarSeccion('home');
+  </script>
 </body>
 </html>
