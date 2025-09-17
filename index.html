@@ -1490,41 +1490,313 @@
 </section>
 
 
-  <!-- REDEMITTEL -->
-  <section id="redemittel" class="contenido-oculto">
-    <h2>Redemittel üben</h2>
-    <p>Lerne nützliche Sätze für den Alltag und Prüfungssituationen.</p>
+<!-- REDEMITTEL (EXTENDIDO) -->
+<section id="redemittel" class="contenido-oculto">
+  <style>
+    /* ===== Estilos locales para Redemittel ===== */
+    .hint {
+      background: rgba(255,255,255,.85);
+      border-left: 5px solid var(--blue);
+      padding: .9rem 1rem; border-radius: 10px; margin: .6rem 0 1rem;
+      font-size: .95rem;
+    }
+    .rdm-wrap { display:flex; flex-direction:column; gap:1rem; }
+    .rdm-card {
+      background: rgba(255,255,255,.92); border-radius: 14px; padding: 1rem;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+    .title-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.5rem; }
+    .title-row i { opacity:.9; }
+    .dialog {
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      border: 2px dashed var(--blue); border-radius: 12px; padding:.8rem; margin:.6rem 0;
+    }
+    .bubble { margin:.25rem 0; }
+    .bubble strong { color: var(--blue); }
+    .opts { list-style:none; padding:0; margin:.5rem 0; }
+    .opts li { margin:.35rem 0; }
+    .opts label { display:flex; align-items:flex-start; gap:.55rem; cursor:pointer; }
+    .controls { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin-top:.6rem; }
+    .score { font-weight:700; }
+    .ok { color:#1a7f37; }
+    .bad { color:#b1002e; }
+    .muted { opacity:.88; }
 
-    <h3>Flashcards</h3>
-    <div class="flashcard-container">
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-school"></i>
-        <span class="word">In der Schule: Ich habe meine Hausaufgaben nicht gemacht.</span>
+    /* Mini flashcards (opcional, solo íconos) */
+    .flashcard-container { display:flex; flex-wrap:wrap; gap:.7rem; }
+    .flashcard {
+      background:#fff; border:2px solid var(--amber); border-radius:12px; width:122px; height:122px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; cursor:pointer;
+      box-shadow:0 3px 10px rgba(0,0,0,.08);
+      transition: transform .12s ease-in;
+    }
+    .flashcard:active { transform: scale(.97); }
+    .flashcard i { font-size:2rem; color: var(--coral); }
+    .flashcard .word { position:absolute; bottom:.5rem; left:0; right:0; text-align:center; font-weight:700; font-size:.9rem; display:none; }
+    .flashcard.show .word { display:block; }
+
+    /* Modal glosario local (ID único para esta sección) */
+    .modal-rdm { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.45); z-index:9999; }
+    .modal-rdm.hidden { display:none; }
+    .modal-box {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem; width:min(460px, calc(100% - 2rem));
+      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    }
+    .modal-box h4 { margin:0 0 .3rem; color:var(--blue); }
+    .modal-close { float:right; border:none; background:transparent; font-size:1.4rem; cursor:pointer; }
+
+    /* Palabras difíciles clicables */
+    .gloss { border-bottom:2px dotted var(--coral); background: rgba(212,90,86,.08); border-radius:6px; padding:0 .2rem; cursor:pointer; }
+
+    /* Responsivo móvil */
+    @media (max-width:600px){
+      .rdm-card { padding:.9rem; }
+      .opts li { margin:.25rem 0; }
+      .flashcard { width:108px; height:108px; }
+    }
+  </style>
+
+  <h2>Redemittel – Expresiones útiles</h2>
+  <p class="hint">
+    🎯 Objetivo: memorizar y usar frases cortas en situaciones reales del nivel <strong>A1/A2</strong> (panadería, bus, restaurante, etc.).  
+    Lee el <strong>diálogo</strong> en alemán y <strong>elige</strong> la frase que falta (alemán muy sencillo).  
+    Funciona en celular, tablet y computador. Las <span class="gloss" data-term="palabras difíciles">palabras difíciles</span> aparecen subrayadas: tócala para ver el significado en español.
+  </p>
+
+  <!-- Mini Redemittel por íconos (opcional, solo internos/íconos) -->
+  <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Tarjetas rápidas (toca para ver la frase)</h3>
+  <div class="flashcard-container">
+    <div class="flashcard" onclick="this.classList.toggle('show')">
+      <i class="fa-solid fa-bread-slice"></i>
+      <span class="word">Ich hätte gern zwei Brötchen, bitte.</span>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('show')">
+      <i class="fa-solid fa-mug-hot"></i>
+      <span class="word">Ein Cappuccino ohne Zucker, bitte.</span>
+    </div>
+    <div class="flashcard" onclick="this.classList.toggle('show')">
+      <i class="fa-solid fa-bus"></i>
+      <span class="word">Fährt dieser Bus zum Bahnhof?</span>
+    </div>
+  </div>
+
+  <article class="rdm-wrap">
+    <div class="rdm-card" id="rdm-panel">
+      <div class="title-row">
+        <i id="rdm-icon" class="fa-solid fa-comments"></i>
+        <strong id="rdm-sit">[Situación]</strong>
+        <span class="muted" id="rdm-progress">1 / 20</span>
       </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-store"></i>
-        <span class="word">Im Supermarkt: Kann ich mit Karte zahlen?</span>
+
+      <div class="dialog" id="rdm-dialog">
+        <p class="bubble"><strong>A:</strong> <span id="rdm-a"></span></p>
+        <p class="bubble"><strong>B:</strong> <em>_____</em></p>
       </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-bus"></i>
-        <span class="word">An der Bushaltestelle: Fährt dieser Bus nach Berlin?</span>
+
+      <ul id="rdm-opts" class="opts"></ul>
+      <p id="rdm-feedback"></p>
+
+      <div class="controls">
+        <button class="btn-submit" id="rdm-check" type="button">Comprobar</button>
+        <button class="btn-ghost" id="rdm-prev" type="button">⟵ Anterior</button>
+        <button class="btn-ghost" id="rdm-next" type="button">Siguiente ⟶</button>
+        <button class="btn-ghost" id="rdm-reset" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+        <span id="rdm-score" class="score"></span>
       </div>
     </div>
-    <p>Tipp: Klicke auf die Karten, um die Redemittel zu sehen.</p>
+  </article>
 
-    <h3>Dialog ergänzen</h3>
-    <p>A: "Guten Tag! Wie kann ich Ihnen helfen?"</p>
-    <p>B: "_____"</p>
-    <ul>
-      <li><input type="radio" name="dlg1" value="a"> a) Mir geht es gut.</li>
-      <li><input type="radio" name="dlg1" value="b"> b) Ich habe zwei Tickets bestellt.</li>
-      <li><input type="radio" name="dlg1" value="c"> c) Ich möchte bezahlen.</li>
-    </ul>
-    <button class="btn-submit" onclick="checkMC('dlg1', 'c', 'dlg1-result')">Überprüfen</button>
-    <p id="dlg1-result"></p>
+  <span class="back-btn" onclick="mostrarSeccion('home')">Volver al inicio</span>
 
-    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
-  </section>
+  <!-- Modal de glosario (único para esta sección) -->
+  <div id="gloss-modal-rdm" class="modal-rdm hidden" role="dialog" aria-modal="true" aria-labelledby="gloss-term-rdm" aria-describedby="gloss-def-rdm">
+    <div class="modal-box">
+      <button id="gloss-close-rdm" class="modal-close" aria-label="Cerrar">×</button>
+      <h4 id="gloss-term-rdm">Término</h4>
+      <p id="gloss-def-rdm">Definición en español</p>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    /* ========= Glosario (palabras difíciles) ========= */
+    const GLOSS = {
+      "ohne":"sin.",
+      "Linie":"línea (de bus/metro).",
+      "Tropfen":"gotas (medicina).",
+      "Husten":"tos.",
+      "Gleis":"andén/vía (tren).",
+      "Rechnung":"cuenta/factura en el restaurante.",
+      "Hausaufgaben":"tareas (del colegio).",
+      "Heft":"cuaderno.",
+      "ausleihen":"tomar prestado.",
+      "Bibliotheksausweis":"carné de biblioteca.",
+      "anprobieren":"probarse (ropa).",
+      "Umkleiden":"probadores/vestidores.",
+      "Termin":"cita (médica, etc.).",
+      "reserviert":"reservado.",
+      "versichert":"asegurado (envío).",
+      "Angebot":"oferta/promo.",
+      "kabelgebunden":"con cable.",
+      "Bluetooth":"conexión inalámbrica Bluetooth.",
+      "Geradeaus":"todo recto.",
+      "Ecke":"esquina.",
+      "grillen":"hacer asado/parrillada.",
+      "Verein":"club/asociación.",
+      "Formular":"formulario.",
+      "verloren":"perdido.",
+      "Einzelzimmer":"habitación individual.",
+      "Karten":"boletas/entradas."
+    };
+
+    /* ========= Utilidades ========= */
+    const byId = id => document.getElementById(id);
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    // resalta términos con span.gloss (case-sensitive para alemán simple)
+    function highlightGloss(text){
+      const keys = Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+      let out = text;
+      keys.forEach(k=>{
+        const rx = new RegExp(`\\b${escapeRegExp(k)}\\b`,'g');
+        out = out.replace(rx, `<span class="gloss" data-term="${k}">${k}</span>`);
+      });
+      return out;
+    }
+    function attachGlossHandlers(scope){
+      scope.querySelectorAll('.gloss').forEach(el=>{
+        el.addEventListener('click', ()=> showGloss(el.dataset.term));
+      });
+    }
+    function showGloss(term){
+      const modal = byId('gloss-modal-rdm');
+      byId('gloss-term-rdm').textContent = term;
+      byId('gloss-def-rdm').textContent = GLOSS[term] || 'Sin definición registrada.';
+      modal.classList.remove('hidden');
+    }
+    byId('gloss-close-rdm').addEventListener('click', ()=> byId('gloss-modal-rdm').classList.add('hidden'));
+
+    /* ========= Banco de ejercicios (20 diálogos) ========= */
+    const ICON = {
+      "Panadería":"fa-bread-slice",
+      "Cafetería":"fa-mug-hot",
+      "Parada de bus":"fa-bus",
+      "Farmacia":"fa-prescription-bottle-medical",
+      "Estación de tren":"fa-train",
+      "Restaurante (pedido)":"fa-utensils",
+      "Restaurante (cuenta)":"fa-receipt",
+      "Escuela (tarea)":"fa-book-open",
+      "Biblioteca":"fa-book",
+      "Tienda de ropa":"fa-shirt",
+      "Consulta médica (cita)":"fa-user-doctor",
+      "Hotel (check-in)":"fa-bed",
+      "Oficina de correos":"fa-box",
+      "Supermercado (precio)":"fa-basket-shopping",
+      "Tienda de electrónica":"fa-headphones",
+      "Calle (direcciones)":"fa-location-arrow",
+      "Invitación":"fa-burger",
+      "Club deportivo (inscripción)":"fa-dumbbell",
+      "Objetos perdidos":"fa-magnifying-glass",
+      "Taquilla de cine":"fa-ticket"
+    };
+
+    const RDM = [
+      {sit:"Panadería", a:"Guten Morgen! Was möchten Sie?", opts:["Ich hätte gern zwei Brötchen, bitte.","Ich wohne im zweiten Stock.","Der Bus kommt um 8 Uhr."], ans:0},
+      {sit:"Cafetería", a:"Möchten Sie etwas trinken?", opts:["Ja, ein Cappuccino ohne Zucker, bitte.","Ich trage Größe M.","Der Zug ist pünktlich."], ans:0},
+      {sit:"Parada de bus", a:"Entschuldigung, fährt dieser Bus zum Bahnhof?", opts:["Ja, Linie 7 fährt direkt dorthin.","Ich brauche Kopfschmerztabletten.","Zwei Karten für den Film, bitte."], ans:0},
+      {sit:"Farmacia", a:"Guten Tag, was fehlt Ihnen?", opts:["Ich suche Tropfen gegen Husten.","Ich möchte die Jacke anprobieren.","Wir treffen uns am Gleis 3."], ans:0},
+      {sit:"Estación de tren", a:"Wann fährt der Zug nach Köln?", opts:["Um 10:45 Uhr von Gleis 2.","Ich esse lieber Pasta.","Ich wohne in Köln."], ans:0},
+      {sit:"Restaurante (pedido)", a:"Sind Sie bereit zu bestellen?", opts:["Ja, ich nehme die Tomatensuppe.","Wo ist die Umkleidekabine?","Die Klassenarbeit ist morgen."], ans:0},
+      {sit:"Restaurante (cuenta)", a:"Hat es Ihnen geschmeckt?", opts:["Ja, sehr. Könnten wir bitte die Rechnung bekommen?","Das T-Shirt ist zu klein.","Ich brauche eine Monatskarte."], ans:0},
+      {sit:"Escuela (tarea)", a:"Hast du die Hausaufgaben dabei?", opts:["Ja, hier im Heft.","Zwei Brötchen, bitte.","Der Film beginnt später."], ans:0},
+      {sit:"Biblioteca", a:"Guten Tag, kann ich dieses Buch ausleihen?", opts:["Ja, für zwei Wochen mit Bibliotheksausweis.","Der Bus fährt alle zehn Minuten.","Ich hätte gern eine Suppe."], ans:0},
+      {sit:"Tienda de ropa", a:"Kann ich diese Jacke anprobieren?", opts:["Ja, die Umkleiden sind dort links.","Der Zug hat Verspätung.","Ich buche ein Doppelzimmer."], ans:0},
+      {sit:"Consulta médica (cita)", a:"Haben Sie einen Termin?", opts:["Ja, um 11 Uhr bei Frau Dr. Meyer.","Ich suche den Kassenbon.","Die Matheprüfung ist heute."], ans:0},
+      {sit:"Hotel (check-in)", a:"Guten Abend, haben Sie reserviert?", opts:["Ja, auf den Namen Schneider, für zwei Nächte.","Eine Fahrkarte nach Bremen, bitte.","Ich brauche ein Ladegerät."], ans:0},
+      {sit:"Oficina de correos", a:"Wohin möchten Sie das Paket schicken?", opts:["Nach München, bitte versichert.","Ich nehme Größe 42.","Der Unterricht fällt aus."], ans:0},
+      {sit:"Supermercado (precio)", a:"Entschuldigung, was kostet dieses Brot?", opts:["2,49 Euro, das ist im Angebot.","Der Film läuft um 19 Uhr.","Ich wohne im dritten Stock."], ans:0},
+      {sit:"Tienda de electrónica", a:"Haben Sie Kopfhörer mit Mikrofon?", opts:["Ja, hier. Möchten Sie kabelgebunden oder Bluetooth?","Ich suche eine Haltestelle.","Ich nehme die Tomatensuppe."], ans:0},
+      {sit:"Calle (direcciones)", a:"Entschuldigung, wo ist die Bibliothek?", opts:["Geradeaus und an der Ecke rechts.","Zwei Fahrkarten nach Hamburg.","Ich hätte gern ein Wasser."], ans:0},
+      {sit:"Invitación", a:"Hast du am Samstag Zeit? Wir grillen im Garten.", opts:["Ja, gern! Um wie viel Uhr soll ich kommen?","Der Bus fährt nicht.","Ich brauche eine Quittung."], ans:0},
+      {sit:"Club deportivo (inscripción)", a:"Möchten Sie dem Verein beitreten?", opts:["Ja, wo kann ich das Formular ausfüllen?","Ich kaufe Obst und Gemüse.","Der Film ist spannend."], ans:0},
+      {sit:"Objetos perdidos", a:"Was haben Sie verloren?", opts:["Meinen schwarzen Rucksack mit Sportkleidung.","Ich nehme ein Einzelzimmer.","Ich esse kein Fleisch."], ans:0},
+      {sit:"Taquilla de cine", a:"Für welchen Film möchten Sie Tickets?", opts:["Für „Sternennacht“, zwei Karten für 18:30 Uhr.","Ich wohne bei meinen Eltern.","Der Zug fährt vom Gleis 5."], ans:0}
+    ];
+
+    /* ========= Elementos ========= */
+    const iconEl = byId('rdm-icon');
+    const sitEl = byId('rdm-sit');
+    const progEl = byId('rdm-progress');
+    const aEl = byId('rdm-a');
+    const optsEl = byId('rdm-opts');
+    const fbEl = byId('rdm-feedback');
+    const scoreEl = byId('rdm-score');
+
+    const btnCheck = byId('rdm-check');
+    const btnPrev = byId('rdm-prev');
+    const btnNext = byId('rdm-next');
+    const btnReset = byId('rdm-reset');
+
+    let idx = 0, score = 0, done = Array(RDM.length).fill(false);
+
+    /* ========= Render ========= */
+    function render(i){
+      const item = RDM[i];
+      iconEl.className = `fa-solid ${ICON[item.sit] || 'fa-comments'}`;
+      sitEl.textContent = `[${item.sit}]`;
+      progEl.textContent = `${i+1} / ${RDM.length}`;
+      // A: con glosario
+      aEl.innerHTML = highlightGloss(item.a);
+      attachGlossHandlers(byId('rdm-dialog'));
+
+      // Opciones
+      optsEl.innerHTML = '';
+      item.opts.forEach((o, k)=>{
+        const id = `rdm_${i}_${k}`;
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <label for="${id}">
+            <input type="radio" id="${id}" name="rdm_opt" value="${k}">
+            ${String.fromCharCode(97+k)}) ${highlightGloss(o)}
+          </label>`;
+        optsEl.appendChild(li);
+      });
+      attachGlossHandlers(optsEl);
+      fbEl.textContent = '';
+      scoreEl.textContent = `Puntaje: ${score} / ${RDM.length}`;
+    }
+
+    function check(){
+      const pick = document.querySelector('input[name="rdm_opt"]:checked');
+      if(!pick){ fbEl.textContent='Selecciona una opción.'; fbEl.className='bad'; return; }
+      const correct = (+pick.value === RDM[idx].ans);
+      if (correct){
+        fbEl.textContent='¡Correcto!'; fbEl.className='ok';
+        if (!done[idx]){ score++; done[idx] = true; }
+      } else {
+        const ans = RDM[idx].ans;
+        fbEl.textContent=`Incorrecto. Respuesta: ${String.fromCharCode(97+ans)}) ${RDM[idx].opts[ans]}`;
+        fbEl.className='bad';
+        done[idx] = true; // se considera contestada
+      }
+      scoreEl.textContent = `Puntaje: ${score} / ${RDM.length}`;
+    }
+
+    /* ========= Eventos ========= */
+    btnCheck.addEventListener('click', check);
+    btnPrev.addEventListener('click', ()=>{ idx = (idx - 1 + RDM.length) % RDM.length; render(idx); });
+    btnNext.addEventListener('click', ()=>{ idx = (idx + 1) % RDM.length; render(idx); });
+    btnReset.addEventListener('click', ()=>{
+      idx = 0; score = 0; done = Array(RDM.length).fill(false); render(idx);
+    });
+
+    /* ========= Init ========= */
+    // activar glosario también en párrafo introductorio
+    attachGlossHandlers(document.getElementById('redemittel'));
+    render(0);
+  })();
+  </script>
+</section>
+
 
   <!-- QUIZ-MODUS -->
   <section id="quiz" class="contenido-oculto">
@@ -1738,5 +2010,6 @@
   </script>
 </body>
 </html>
+
 
 
