@@ -319,47 +319,503 @@
     </main>
   </section>
 
-  <!-- VOCABULARY FLASHCARDS -->
-  <section id="vokabeln" class="contenido-oculto">
-    <h2>Vokabeln lernen</h2>
-    <p>Lerne 200 wichtige Wörter mit unseren interaktiven Flashcards!</p>
-    <div class="flashcard-container">
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-house"></i>
-        <span class="word">das Haus</span>
+<!-- VOCABULARY FLASHCARDS (EXTENDIDO) -->
+<section id="vokabeln" class="contenido-oculto">
+  <style>
+    /* ===== Estilos locales Vocabulario ===== */
+    .hint {
+      background: rgba(255,255,255,.9);
+      border-left: 5px solid var(--blue);
+      padding: .9rem 1rem; border-radius: 10px; margin: .6rem 0 1rem;
+      font-size: .95rem;
+    }
+    .v-controls {
+      display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin:.6rem 0 1rem;
+    }
+    .pillbar { display:flex; gap:.5rem; overflow:auto; padding-bottom:.2rem; }
+    .pillbar::-webkit-scrollbar { height:8px; }
+    .pill {
+      white-space:nowrap; border:2px solid var(--blue); background:#fff; color:var(--text);
+      padding:.45rem .8rem; border-radius:999px; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:.45rem;
+    }
+    .pill.active { background:var(--blue); color:#fff; }
+    .badge { background:var(--amber); color:#000; border-radius:999px; padding:.05rem .45rem; font-size:.8rem; font-weight:800; }
+
+    .v-actions { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; margin-top:.4rem; }
+    .v-search { flex:1; min-width:200px; display:flex; align-items:center; gap:.4rem; border:2px solid var(--grass); background:#fff; border-radius:10px; padding:.4rem .6rem; }
+    .v-search input { border:none; outline:none; width:100%; font-size:1rem; }
+    .btn-ghost { border:2px solid var(--coral); background:#fff; color:var(--text); padding:.45rem .8rem; border-radius:10px; font-weight:700; cursor:pointer; }
+    .btn-ghost:active { transform:scale(.98); }
+
+    .grid {
+      display:grid; gap:.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    }
+
+    .vcard {
+      position:relative; background:#fff; border-radius:14px; min-height:150px;
+      display:flex; align-items:center; justify-content:center; text-align:center; cursor:pointer;
+      box-shadow:0 6px 18px var(--shadow); border:2px solid rgba(0,0,0,.05);
+      transition: transform .12s ease-in, box-shadow .12s ease-in;
+      padding: .6rem;
+    }
+    .vcard:focus { outline: 3px solid var(--amber); }
+    .vcard:active { transform:scale(.98); }
+    .vface { width:100%; }
+    .icon-face i { font-size:2.5rem; color:var(--coral); }
+    .text-face { display:none; line-height:1.35; }
+    .vcard.show .icon-face { display:none; }
+    .vcard.show .text-face { display:block; }
+
+    .de { font-weight:800; color:var(--blue); }
+    .de .article { opacity:.9; }
+    .term.gloss { border-bottom:2px dotted var(--coral); background: rgba(212,90,86,.08); border-radius:6px; padding:0 .2rem; cursor:pointer; }
+    .es { margin-top:.25rem; }
+    .pl { font-size:.9rem; opacity:.85; margin-top:.15rem; }
+
+    .footer-row { display:flex; justify-content:space-between; align-items:center; margin-top:.6rem; font-weight:700; }
+    .muted { opacity:.8; }
+
+    /* Modal glosario exclusivo de esta sección */
+    .modal-vocab { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.45); z-index:9999; }
+    .modal-vocab.hidden { display:none; }
+    .modal-box {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem; width:min(520px, calc(100% - 2rem));
+      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    }
+    .modal-box h4 { margin:0 0 .3rem; color:var(--blue); }
+    .modal-close { float:right; border:none; background:transparent; font-size:1.4rem; cursor:pointer; }
+
+    @media (max-width:600px){
+      .grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+      .vcard { min-height:140px; }
+    }
+  </style>
+
+  <h2>Vokabeln lernen – Flashcards</h2>
+  <p class="hint">
+    🎯 Objetivo: aprender <strong>200 palabras básicas</strong> de uso cotidiano (nivel A2), organizadas por temas.  
+    ✔️ Funcionamiento: cada tarjeta muestra solo el <strong>ícono</strong>. Toca/clic para <strong>revelar</strong> el artículo + palabra en alemán, su <em>traducción al español</em> y <strong>plural</strong>.  
+    🧠 Consejo: repasa por tema o usa el buscador. Todo funciona en celular, tablet y computador.
+  </p>
+
+  <!-- Filtros y acciones -->
+  <div class="v-controls">
+    <div class="pillbar" id="cat-bar" role="tablist" aria-label="Temas de vocabulario"></div>
+    <div class="v-actions" style="width:100%;">
+      <div class="v-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="v-search-input" type="search" placeholder="Buscar (alemán o español)…">
       </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-car"></i>
-        <span class="word">das Auto</span>
-      </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-bus"></i>
-        <span class="word">der Bus</span>
-      </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-shop"></i>
-        <span class="word">der Supermarkt</span>
-      </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-utensils"></i>
-        <span class="word">das Essen</span>
-      </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-film"></i>
-        <span class="word">der Film</span>
-      </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-dog"></i>
-        <span class="word">der Hund</span>
-      </div>
-      <div class="flashcard" onclick="this.classList.toggle('show')">
-        <i class="fa-solid fa-book-open"></i>
-        <span class="word">das Buch</span>
-      </div>
+      <button class="btn-ghost" id="v-shuffle"><i class="fa-solid fa-shuffle"></i> Aleatorio</button>
+      <button class="btn-ghost" id="v-hide-es"><i class="fa-solid fa-language"></i> Mostrar/Ocultar español</button>
+      <button class="btn-ghost" id="v-reset"><i class="fa-solid fa-rotate-left"></i> Reiniciar vista</button>
     </div>
-    <p>Tipp: Klicke auf eine Karte, um das Wort anzuzeigen oder zu verbergen.</p>
-    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
-  </section>
+  </div>
+
+  <!-- Contenedor de tarjetas -->
+  <div id="v-grid" class="grid" aria-live="polite"></div>
+  <div class="footer-row">
+    <span id="v-count" class="muted">0 resultados</span>
+    <span id="v-progress" class="muted">Vistas: 0 / 20</span>
+  </div>
+
+  <span class="back-btn" onclick="mostrarSeccion('home')">Volver al inicio</span>
+
+  <!-- Modal de glosario (único para esta sección) -->
+  <div id="gloss-modal-vocab" class="modal-vocab hidden" role="dialog" aria-modal="true" aria-labelledby="gloss-term-vocab" aria-describedby="gloss-def-vocab">
+    <div class="modal-box">
+      <button id="gloss-close-vocab" class="modal-close" aria-label="Cerrar">×</button>
+      <h4 id="gloss-term-vocab">Término</h4>
+      <p id="gloss-def-vocab">Definición en español</p>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    const byId = id => document.getElementById(id);
+
+    /* ===== Glosario (palabras algo más difíciles) ===== */
+    const GLOSS = {
+      "die Versicherungskarte":"tarjeta del seguro médico.",
+      "der Ausweis":"documento de identidad.",
+      "der Fahrplan":"horario oficial (buses/trenes).",
+      "die Fahrkarte":"billete de transporte.",
+      "das Gleis":"andén/vía del tren.",
+      "die Abfahrt":"salida de un tren/bus.",
+      "die Ankunft":"llegada.",
+      "die Verspätung":"retraso/demora.",
+      "das Rathaus":"ayuntamiento/edificio municipal.",
+      "das Schwimmbad":"piscina pública.",
+      "der Spielplatz":"parque infantil.",
+      "das Krankenhaus":"hospital.",
+      "die Metzgerei":"carnicería.",
+      "der Friseur":"peluquero / peluquería.",
+      "die Feuerwehr":"cuerpo de bomberos.",
+      "die Landschaft":"paisaje.",
+      "die Jahreszeit":"estación del año.",
+      "die Erkältung":"resfriado.",
+      "der Verband":"vendaje.",
+      "das Pflaster":"tirita/curita.",
+      "die Krankenversicherung":"seguro médico.",
+      "die Verabredung":"cita / quedada con alguien.",
+      "der Bildschirm":"pantalla.",
+      "die Tastatur":"teclado.",
+      "das Ladegerät":"cargador.",
+      "das Passwort":"contraseña.",
+      "die Webseite":"página web.",
+      "die Postfiliale":"oficina de correos.",
+      "der Kassenbon":"ticket fiscal de compra.",
+      "der Rucksack":"mochila (de espalda)."
+    };
+
+    function glossWrap(de){
+      // Si el término tiene glosario, lo hacemos clicable
+      return GLOSS[de] ? de.replace(/(.+)/, '<span class="term gloss" data-term="$1">$1</span>') : de;
+    }
+    function attachGlossHandlers(scope){
+      scope.querySelectorAll('.gloss').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const term = el.dataset.term;
+          byId('gloss-term-vocab').textContent = term;
+          byId('gloss-def-vocab').textContent = GLOSS[term] || 'Sin definición registrada.';
+          byId('gloss-modal-vocab').classList.remove('hidden');
+        });
+      });
+    }
+    byId('gloss-close-vocab').addEventListener('click', ()=> byId('gloss-modal-vocab').classList.add('hidden'));
+
+    /* ===== Banco de 200 palabras por categorías ===== */
+    const CATS = [
+      { id:"hogar",  name:"Casa y hogar", icon:"fa-house", items: [
+        ["fa-house","das Haus","la casa","n.","Häuser"],
+        ["fa-building","die Wohnung","la vivienda","f.","Wohnungen"],
+        ["fa-door-closed","das Zimmer","la habitación","n.","Zimmer"],
+        ["fa-door-open","die Tür","la puerta","f.","Türen"],
+        ["fa-window-maximize","das Fenster","la ventana","n.","Fenster"],
+        ["fa-bed","das Bett","la cama","n.","Betten"],
+        ["fa-table","der Tisch","la mesa","m.","Tische"],
+        ["fa-chair","der Stuhl","la silla","m.","Stühle"],
+        ["fa-box-archive","der Schrank","el armario","m.","Schränke"],
+        ["fa-lightbulb","die Lampe","la lámpara","f.","Lampen"],
+        ["fa-key","der Schlüssel","la llave","m.","Schlüssel"],
+        ["fa-mirror","der Spiegel","el espejo","m.","Spiegel"],
+        ["fa-square","der Teppich","la alfombra","m.","Teppiche"],
+        ["fa-utensils","die Küche","la cocina","f.","Küchen"],
+        ["fa-bath","das Bad","el baño","n.","Bäder"],
+        ["fa-shower","die Dusche","la ducha","f.","Duschen"],
+        ["fa-toilet","die Toilette","el inodoro","f.","Toiletten"],
+        ["fa-stairs","die Treppe","la escalera","f.","Treppen"],
+        ["fa-house-chimney","der Balkon","el balcón","m.","Balkone"],
+        ["fa-seedling","der Garten","el jardín","m.","Gärten"],
+      ]},
+      { id:"escuela", name:"Escuela y estudio", icon:"fa-school", items:[
+        ["fa-school","die Schule","la escuela","f.","Schulen"],
+        ["fa-chalkboard","der Klassenraum","el aula","m.","Klassenräume"],
+        ["fa-users","die Klasse","la clase (grupo)","f.","Klassen"],
+        ["fa-chalkboard-user","der Lehrer","el profesor","m.","Lehrer"],
+        ["fa-chalkboard-user","die Lehrerin","la profesora","f.","Lehrerinnen"],
+        ["fa-child","der Schüler","el alumno","m.","Schüler"],
+        ["fa-child","die Schülerin","la alumna","f.","Schülerinnen"],
+        ["fa-book","das Buch","el libro","n.","Bücher"],
+        ["fa-book-open","das Heft","el cuaderno","n.","Hefte"],
+        ["fa-pen","der Kuli","el bolígrafo","m.","Kulis"],
+        ["fa-pencil","der Bleistift","el lápiz","m.","Bleistifte"],
+        ["fa-eraser","der Radiergummi","la goma","m.","Radiergummis"],
+        ["fa-ruler","das Lineal","la regla","n.","Lineale"],
+        ["fa-suitcase","der Rucksack","la mochila","m.","Rucksäcke"],
+        ["fa-file-lines","die Hausaufgabe","la tarea","f.","Hausaufgaben"],
+        ["fa-clipboard-check","die Prüfung","el examen","f.","Prüfungen"],
+        ["fa-clipboard-list","die Note","la nota","f.","Noten"],
+        ["fa-table","der Stundenplan","el horario","m.","Stundenpläne"],
+        ["fa-file","das Zeugnis","el certificado","n.","Zeugnisse"],
+        ["fa-book","die Bibliothek","la biblioteca","f.","Bibliotheken"],
+      ]},
+      { id:"comida", name:"Comida y bebidas", icon:"fa-bread-slice", items:[
+        ["fa-bread-slice","das Brot","el pan","n.","Brote"],
+        ["fa-bread-slice","das Brötchen","el panecillo","n.","Brötchen"],
+        ["fa-cow","die Milch","la leche","f.","(ohne Pl.)"],
+        ["fa-glass-water","das Wasser","el agua","n.","(ohne Pl.)"],
+        ["fa-wine-glass","der Saft","el jugo","m.","Säfte"],
+        ["fa-mug-saucer","der Tee","el té","m.","Tees"],
+        ["fa-mug-saucer","der Kaffee","el café","m.","Kaffees"],
+        ["fa-carrot","das Gemüse","la verdura","n.","(ohne Pl.)"],
+        ["fa-apple-whole","das Obst","la fruta","n.","(ohne Pl.)"],
+        ["fa-apple-whole","der Apfel","la manzana","m.","Äpfel"],
+        ["fa-lemon","die Banane","el plátano","f.","Bananen"],
+        ["fa-lemon","die Orange","la naranja","f.","Orangen"],
+        ["fa-seedling","die Tomate","el tomate","f.","Tomaten"],
+        ["fa-seedling","die Kartoffel","la papa","f.","Kartoffeln"],
+        ["fa-bowl-food","die Suppe","la sopa","f.","Suppen"],
+        ["fa-bowl-food","der Salat","la ensalada","m.","Salate"],
+        ["fa-pizza-slice","die Pizza","la pizza","f.","Pizzen"],
+        ["fa-cheese","der Käse","el queso","m.","(ohne Pl.)"],
+        ["fa-egg","das Ei","el huevo","n.","Eier"],
+        ["fa-fish","der Fisch","el pescado","m.","Fische"],
+      ]},
+      { id:"compras", name:"Compras y servicios", icon:"fa-basket-shopping", items:[
+        ["fa-basket-shopping","der Supermarkt","el supermercado","m.","Supermärkte"],
+        ["fa-store","der Markt","el mercado","m.","Märkte"],
+        ["fa-store","der Laden","la tienda","m.","Läden"],
+        ["fa-credit-card","die Kasse","la caja","f.","Kassen"],
+        ["fa-tags","der Preis","el precio","m.","Preise"],
+        ["fa-percent","der Rabatt","el descuento","m.","Rabatte"],
+        ["fa-receipt","die Quittung","el recibo","f.","Quittungen"],
+        ["fa-receipt","der Kassenbon","el ticket","m.","Kassenbons"],
+        ["fa-bag-shopping","die Tüte","la bolsa","f.","Tüten"],
+        ["fa-cart-shopping","der Einkaufswagen","el carrito","m.","Einkaufswagen"],
+        ["fa-mortar-pestle","die Apotheke","la farmacia","f.","Apotheken"],
+        ["fa-envelope","die Postfiliale","la oficina de correos","f.","Postfilialen"],
+        ["fa-box","das Paket","el paquete","n.","Pakete"],
+        ["fa-envelope","der Brief","la carta","m.","Briefe"],
+        ["fa-stamp","die Briefmarke","el sello","f.","Briefmarken"],
+        ["fa-person","der Schalter","la ventanilla","m.","Schalter"],
+        ["fa-file-lines","das Formular","el formulario","n.","Formulare"],
+        ["fa-id-card","der Ausweis","el documento (ID)","m.","Ausweise"],
+        ["fa-id-card","die Versicherungskarte","la tarjeta de seguro","f.","Versicherungskarten"],
+        ["fa-file-lines","die Rechnung","la factura","f.","Rechnungen"],
+      ]},
+      { id:"transporte", name:"Transporte y viaje", icon:"fa-bus", items:[
+        ["fa-bus","der Bus","el bus","m.","Busse"],
+        ["fa-train","der Zug","el tren","m.","Züge"],
+        ["fa-train-subway","die U-Bahn","el metro","f.","U-Bahnen"],
+        ["fa-taxi","das Taxi","el taxi","n.","Taxis"],
+        ["fa-car","das Auto","el coche","n.","Autos"],
+        ["fa-bicycle","das Fahrrad","la bicicleta","n.","Fahrräder"],
+        ["fa-train","der Bahnhof","la estación","m.","Bahnhöfe"],
+        ["fa-location-dot","die Haltestelle","la parada","f.","Haltestellen"],
+        ["fa-road","das Gleis","el andén/vía","n.","Gleise"],
+        ["fa-table-list","der Fahrplan","el horario","m.","Fahrpläne"],
+        ["fa-ticket","die Fahrkarte","el billete","f.","Fahrkarten"],
+        ["fa-chair","der Sitzplatz","el asiento","m.","Sitzplätze"],
+        ["fa-suitcase","der Koffer","la maleta","m.","Koffer"],
+        ["fa-bag-shopping","die Tasche","la bolsa","f.","Taschen"],
+        ["fa-plane-departure","der Flughafen","el aeropuerto","m.","Flughäfen"],
+        ["fa-clock","die Verspätung","el retraso","f.","Verspätungen"],
+        ["fa-plane-arrival","die Ankunft","la llegada","f.","Ankünfte"],
+        ["fa-arrow-right","die Abfahrt","la salida","f.","Abfahrten"],
+        ["fa-ticket","das Ticket","el ticket","n.","Tickets"],
+        ["fa-passport","der Reisepass","el pasaporte","m.","Reisepässe"],
+      ]},
+      { id:"ciudad", name:"Ciudad y lugares", icon:"fa-city", items:[
+        ["fa-city","die Stadt","la ciudad","f.","Städte"],
+        ["fa-house","das Dorf","el pueblo","n.","Dörfer"],
+        ["fa-tree","der Park","el parque","m.","Parks"],
+        ["fa-road","die Straße","la calle","f.","Straßen"],
+        ["fa-square","der Platz","la plaza","m.","Plätze"],
+        ["fa-landmark","das Rathaus","el ayuntamiento","n.","Rathäuser"],
+        ["fa-book","die Bibliothek","la biblioteca","f.","Bibliotheken"],
+        ["fa-film","das Kino","el cine","n.","Kinos"],
+        ["fa-masks-theater","das Theater","el teatro","n.","Theater"],
+        ["fa-building","das Museum","el museo","n.","Museen"],
+        ["fa-person-swimming","das Schwimmbad","la piscina","n.","Schwimmbäder"],
+        ["fa-child","der Spielplatz","el parque infantil","m.","Spielplätze"],
+        ["fa-church","die Kirche","la iglesia","f.","Kirchen"],
+        ["fa-hospital","das Krankenhaus","el hospital","n.","Krankenhäuser"],
+        ["fa-bread-slice","die Bäckerei","la panadería","f.","Bäckereien"],
+        ["fa-shop","die Metzgerei","la carnicería","f.","Metzgereien"],
+        ["fa-scissors","der Friseur","la peluquería/el peluquero","m.","Friseure"],
+        ["fa-building-columns","die Bank","el banco","f.","Banken"],
+        ["fa-shield","die Polizei","la policía","f.","(ohne Pl.)"],
+        ["fa-fire-extinguisher","die Feuerwehr","los bomberos","f.","Feuerwehren"],
+      ]},
+      { id:"naturaleza", name:"Naturaleza y clima", icon:"fa-sun", items:[
+        ["fa-sun","die Sonne","el sol","f.","Sonnen"],
+        ["fa-cloud","die Wolke","la nube","f.","Wolken"],
+        ["fa-cloud-rain","der Regen","la lluvia","m.","(ohne Pl.)"],
+        ["fa-snowflake","der Schnee","la nieve","m.","(ohne Pl.)"],
+        ["fa-wind","der Wind","el viento","m.","Winde"],
+        ["fa-smog","der Nebel","la niebla","m.","Nebel"],
+        ["fa-cloud-bolt","das Gewitter","la tormenta","n.","Gewitter"],
+        ["fa-cloud-bolt","der Sturm","la tempestad","m.","Stürme"],
+        ["fa-tree","der Baum","el árbol","m.","Bäume"],
+        ["fa-seedling","die Blume","la flor","f.","Blumen"],
+        ["fa-leaf","das Blatt","la hoja","n.","Blätter"],
+        ["fa-mountain","der Berg","la montaña","m.","Berge"],
+        ["fa-water","der See","el lago","m.","Seen"],
+        ["fa-water","der Fluss","el río","m.","Flüsse"],
+        ["fa-water","das Meer","el mar","n.","Meere"],
+        ["fa-umbrella-beach","der Strand","la playa","m.","Strände"],
+        ["fa-image","die Landschaft","el paisaje","f.","Landschaften"],
+        ["fa-calendar","die Jahreszeit","la estación (año)","f.","Jahreszeiten"],
+        ["fa-cloud-rain","der Regenmantel","el impermeable","m.","Regenmäntel"],
+        ["fa-umbrella","der Regenschirm","el paraguas","m.","Regenschirme"],
+      ]},
+      { id:"salud", name:"Cuerpo y salud", icon:"fa-user-doctor", items:[
+        ["fa-user","der Kopf","la cabeza","m.","Köpfe"],
+        ["fa-hand","die Hand","la mano","f.","Hände"],
+        ["fa-shoe-prints","der Fuß","el pie","m.","Füße"],
+        ["fa-tooth","der Zahn","el diente","m.","Zähne"],
+        ["fa-eye","das Auge","el ojo","n.","Augen"],
+        ["fa-user-doctor","der Arzt","el médico","m.","Ärzte"],
+        ["fa-user-doctor","die Ärztin","la médica","f.","Ärztinnen"],
+        ["fa-house-medical","die Praxis","la consulta","f.","Praxen"],
+        ["fa-calendar-check","der Termin","la cita","m.","Termine"],
+        ["fa-tablets","die Tablette","la pastilla","f.","Tabletten"],
+        ["fa-file-prescription","das Rezept","la receta médica","n.","Rezepte"],
+        ["fa-bandage","der Verband","el vendaje","m.","Verbände"],
+        ["fa-bandage","das Pflaster","la tirita","n.","Pflaster"],
+        ["fa-temperature-high","das Fieber","la fiebre","n.","(ohne Pl.)"],
+        ["fa-head-side-cough","die Erkältung","el resfriado","f.","Erkältungen"],
+        ["fa-head-side-cough","der Husten","la tos","m.","(ohne Pl.)"],
+        ["fa-syringe","die Spritze","la jeringa","f.","Spritzen"],
+        ["fa-temperature-half","das Thermometer","el termómetro","n.","Thermometer"],
+        ["fa-mask","die Maske","la mascarilla","f.","Masken"],
+        ["fa-shield","die Krankenversicherung","el seguro médico","f.","Krankenversicherungen"],
+      ]},
+      { id:"tiempo", name:"Tiempo y calendario", icon:"fa-calendar-days", items:[
+        ["fa-calendar-day","der Tag","el día","m.","Tage"],
+        ["fa-calendar-week","die Woche","la semana","f.","Wochen"],
+        ["fa-calendar","der Monat","el mes","m.","Monate"],
+        ["fa-calendar","das Jahr","el año","n.","Jahre"],
+        ["fa-calendar","das Wochenende","el fin de semana","n.","Wochenenden"],
+        ["fa-sun","der Morgen","la mañana","m.","Morgen"],
+        ["fa-sun","der Mittag","el mediodía","m.","Mittage"],
+        ["fa-sun","der Nachmittag","la tarde","m.","Nachmittage"],
+        ["fa-cloud-moon","der Abend","la noche (tarde-noche)","m.","Abende"],
+        ["fa-moon","die Nacht","la noche","f.","Nächte"],
+        ["fa-clock","die Uhr","la hora / reloj","f.","Uhren"],
+        ["fa-clock","die Stunde","la hora (60 min)","f.","Stunden"],
+        ["fa-clock","die Minute","el minuto","f.","Minuten"],
+        ["fa-circle-pause","die Pause","la pausa","f.","Pausen"],
+        ["fa-umbrella-beach","die Ferien","las vacaciones","Pl.","(nur Pl.)"],
+        ["fa-star","der Feiertag","el festivo","m.","Feiertage"],
+        ["fa-envelope-open-text","die Einladung","la invitación","f.","Einladungen"],
+        ["fa-cake-candles","der Geburtstag","el cumpleaños","m.","Geburtstage"],
+        ["fa-calendar-days","der Kalender","el calendario","m.","Kalender"],
+        ["fa-calendar-check","die Verabredung","la cita/quedada","f.","Verabredungen"],
+      ]},
+      { id:"tecnologia", name:"Tecnología y medios", icon:"fa-mobile-screen-button", items:[
+        ["fa-mobile-screen-button","das Handy","el móvil","n.","Handys"],
+        ["fa-phone","das Telefon","el teléfono","n.","Telefone"],
+        ["fa-desktop","der Computer","el ordenador","m.","Computer"],
+        ["fa-laptop","der Laptop","el portátil","m.","Laptops"],
+        ["fa-tablet-screen-button","das Tablet","la tablet","n.","Tablets"],
+        ["fa-computer-mouse","die Maus","el ratón","f.","Mäuse"],
+        ["fa-keyboard","die Tastatur","el teclado","f.","Tastaturen"],
+        ["fa-display","der Bildschirm","la pantalla","m.","Bildschirme"],
+        ["fa-globe","das Internet","internet","n.","(ohne Pl.)"],
+        ["fa-envelope","die E-Mail","el correo electrónico","f.","E-Mails"],
+        ["fa-message","die Nachricht","el mensaje","f.","Nachrichten"],
+        ["fa-camera","das Foto","la foto","n.","Fotos"],
+        ["fa-camera","die Kamera","la cámara","f.","Kameras"],
+        ["fa-plug","das Ladegerät","el cargador","n.","Ladegeräte"],
+        ["fa-headphones","der Kopfhörer","los auriculares","m.","Kopfhörer"],
+        ["fa-print","der Drucker","la impresora","m.","Drucker"],
+        ["fa-lock","das Passwort","la contraseña","n.","Passwörter"],
+        ["fa-mobile","die App","la aplicación","f.","Apps"],
+        ["fa-window-maximize","die Webseite","la página web","f.","Webseiten"],
+        ["fa-link","der Link","el enlace","m.","Links"],
+      ]},
+    ];
+
+    /* ===== Render categorías (píldoras) ===== */
+    const catBar = byId('cat-bar');
+    CATS.forEach((c, i)=>{
+      const btn = document.createElement('button');
+      btn.className = 'pill' + (i===0?' active':'');
+      btn.id = 'cat-'+c.id;
+      btn.innerHTML = `<i class="fa-solid ${c.icon}"></i> ${c.name} <span class="badge">20</span>`;
+      btn.addEventListener('click', ()=> setCategory(c.id));
+      catBar.appendChild(btn);
+    });
+
+    /* ===== Estado y render de tarjetas ===== */
+    const grid = byId('v-grid');
+    const countEl = byId('v-count');
+    const progEl = byId('v-progress');
+    const searchInput = byId('v-search-input');
+    const btnShuffle = byId('v-shuffle');
+    const btnToggleEs = byId('v-hide-es');
+    const btnReset = byId('v-reset');
+
+    let currentCat = CATS[0].id;
+    let showSpanish = true;
+    let revealed = new Set(); // ids de tarjetas vistas (para progreso)
+    let order = [...Array(20).keys()]; // índice 0..19 por categoría
+
+    function setCategory(id){
+      currentCat = id;
+      document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+      byId('cat-'+id).classList.add('active');
+      order = [...Array(20).keys()];
+      searchInput.value='';
+      renderGrid();
+      window.scrollTo({top: grid.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+    }
+
+    function renderGrid(){
+      const cat = CATS.find(c=>c.id===currentCat);
+      let items = order.map(i => ({i, data: cat.items[i]}));
+      const q = searchInput.value.trim().toLowerCase();
+      if (q){
+        items = items.filter(o=>{
+          const [icon,de,es] = [o.data[0], o.data[1], o.data[2]];
+          return de.toLowerCase().includes(q) || es.toLowerCase().includes(q);
+        });
+      }
+      grid.innerHTML = items.map(o=>{
+        const [icon, de, es, gen, pl] = o.data;
+        const id = currentCat+'__'+o.i;
+        const deHtml = glossWrap(de);
+        return `
+          <div class="vcard" role="button" tabindex="0" data-id="${id}" data-de="${de}" data-es="${es}">
+            <div class="vface icon-face"><i class="fa-solid ${icon}"></i></div>
+            <div class="vface text-face">
+              <div class="de"><span class="article">${gen}</span> ${deHtml}</div>
+              <div class="es" style="${showSpanish?'':'display:none;'}"><i class="fa-solid fa-language"></i> ${es}</div>
+              <div class="pl"><i class="fa-solid fa-users"></i> Plural: ${pl}</div>
+            </div>
+          </div>`;
+      }).join('');
+      // handlers: flip + accesibilidad + glosario
+      grid.querySelectorAll('.vcard').forEach(card=>{
+        const toggle = ()=> {
+          card.classList.toggle('show');
+          if (card.classList.contains('show')) revealed.add(card.dataset.id);
+          updateProgress();
+        };
+        card.addEventListener('click', toggle);
+        card.addEventListener('keydown', (e)=>{ if (e.key==='Enter'||e.key===' ') { e.preventDefault(); toggle(); } });
+      });
+      attachGlossHandlers(grid);
+      countEl.textContent = `${items.length} resultado${items.length!==1?'s':''}`;
+      updateProgress();
+    }
+
+    function updateProgress(){
+      // progreso por categoría: cuántas tarjetas de esa categoría han sido vistas al menos una vez
+      const cat = CATS.find(c=>c.id===currentCat);
+      const total = cat.items.length;
+      const seen = [...revealed].filter(id=> id.startsWith(currentCat+'__')).length;
+      progEl.textContent = `Vistas: ${seen} / ${total}`;
+    }
+
+    // Acciones
+    btnShuffle.addEventListener('click', ()=>{
+      order = order.map(i=>[Math.random(), i]).sort((a,b)=>a[0]-b[0]).map(p=>p[1]);
+      renderGrid();
+    });
+    btnToggleEs.addEventListener('click', ()=>{
+      showSpanish = !showSpanish;
+      grid.querySelectorAll('.text-face .es').forEach(el=>{
+        el.style.display = showSpanish ? '' : 'none';
+      });
+    });
+    btnReset.addEventListener('click', ()=>{
+      revealed.clear();
+      order = [...Array(20).keys()];
+      searchInput.value='';
+      renderGrid();
+    });
+    searchInput.addEventListener('input', renderGrid);
+
+    // Inicial
+    renderGrid();
+  })();
+  </script>
+</section>
+
 
 <!-- GRAMMATIK ÜBEN (EXTENDIDO) -->
 <section id="grammatik" class="contenido-oculto">
@@ -1798,41 +2254,407 @@
 </section>
 
 
-  <!-- QUIZ-MODUS -->
-  <section id="quiz" class="contenido-oculto">
-    <h2>Quiz-Modus</h2>
-    <p>Teste dein Wissen schnell und spielerisch!</p>
+<!-- QUIZ-MODUS (EXTENDIDO) -->
+<section id="quiz" class="contenido-oculto">
+  <style>
+    /* ===== Estilos locales para Quiz-Modus ===== */
+    .hint {
+      background: rgba(255,255,255,.9);
+      border-left: 5px solid var(--blue);
+      padding: .9rem 1rem; border-radius: 10px; margin: .6rem 0 1rem;
+      font-size: .95rem;
+    }
+    .quiz-tabs { display:flex; gap:.6rem; flex-wrap:wrap; margin:.4rem 0 1rem; }
+    .quiz-tab {
+      border:2px solid var(--blue); background:#fff; color:var(--text);
+      padding:.5rem .9rem; border-radius: 999px; cursor:pointer; font-weight:700;
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .quiz-tab.active { background: var(--blue); color:#fff; }
 
-    <div id="quiz-content">
-      <div class="quiz-question">
-        <p>1. Wie heißt "Katze" auf Deutsch?</p>
-        <ul class="quiz-options">
-          <li><label><input type="radio" name="quizQ1" value="a"> a) der Hund</label></li>
-          <li><label><input type="radio" name="quizQ1" value="b"> b) die Katze</label></li>
-          <li><label><input type="radio" name="quizQ1" value="c"> c) die Maus</label></li>
-        </ul>
-      </div>
-      <div class="quiz-question">
-        <p>2. "Ich gehe ___ Schule."</p>
-        <ul class="quiz-options">
-          <li><label><input type="radio" name="quizQ2" value="a"> a) in der</label></li>
-          <li><label><input type="radio" name="quizQ2" value="b"> b) zur</label></li>
-          <li><label><input type="radio" name="quizQ2" value="c"> c) zum</label></li>
-        </ul>
-      </div>
-      <div class="quiz-question">
-        <p>3. "Heute ist Samstag." - Wahr oder Falsch?</p>
-        <ul class="quiz-options">
-          <li><label><input type="radio" name="quizQ3" value="true"> Wahr</label></li>
-          <li><label><input type="radio" name="quizQ3" value="false"> Falsch</label></li>
-        </ul>
-      </div>
-      <button class="btn-submit" onclick="checkQuizAnswers()">Ergebnisse anzeigen</button>
-      <p id="quiz-result" class="result"></p>
+    .quiz-card {
+      background: rgba(255,255,255,.94); border-radius: 14px; padding: 1rem;
+      box-shadow: 0 6px 18px var(--shadow);
+    }
+    .title-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.6rem; }
+    .title-row i { opacity:.9; }
+
+    /* Opciones */
+    .opts { list-style:none; padding:0; margin:.6rem 0; }
+    .opts li { margin:.35rem 0; }
+    .opts label { display:flex; align-items:flex-start; gap:.55rem; cursor:pointer; }
+
+    /* Controles */
+    .controls { display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; margin-top:.6rem; }
+    .score { font-weight:700; }
+    .ok { color:#1a7f37; }
+    .bad { color:#b1002e; }
+    .muted { opacity:.85; }
+
+    /* Temporizador */
+    .timer-row { display:flex; align-items:center; gap:.6rem; }
+    .timer { font-weight:800; min-width: 3ch; text-align:right; }
+    .bar {
+      position:relative; flex:1; height:10px; background:#e8eefb; border-radius:999px; overflow:hidden;
+    }
+    .bar > span {
+      position:absolute; left:0; top:0; bottom:0; width:100%;
+      background: linear-gradient(90deg, var(--grass), var(--amber));
+      transition: width .2s linear;
+    }
+
+    /* Eliminación progresiva */
+    .elim-prompt { margin:.5rem 0 .7rem; }
+    .elim-opts { display:flex; flex-wrap:wrap; gap:.5rem; }
+    .elim-btn {
+      border:2px solid var(--coral); background:#fff; border-radius: 999px; padding:.45rem .8rem; font-weight:700; cursor:pointer;
+    }
+    .elim-btn[disabled] { opacity:.45; text-decoration: line-through; cursor:not-allowed; }
+    .elim-hint { margin-top:.5rem; font-size:.95rem; }
+
+    /* Modal glosario exclusivo de esta sección */
+    .modal-quiz { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,.45); z-index:9999; }
+    .modal-quiz.hidden { display:none; }
+    .modal-box {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem; width:min(460px, calc(100% - 2rem));
+      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    }
+    .modal-box h4 { margin:0 0 .3rem; color:var(--blue); }
+    .modal-close { float:right; border:none; background:transparent; font-size:1.4rem; cursor:pointer; }
+
+    /* Palabras difíciles clicables */
+    .gloss { border-bottom:2px dotted var(--coral); background: rgba(212,90,86,.08); border-radius:6px; padding:0 .2rem; cursor:pointer; }
+
+    /* Responsivo móvil */
+    @media (max-width:600px){
+      .quiz-card { padding:.9rem; }
+      .opts li { margin:.25rem 0; }
+    }
+  </style>
+
+  <h2>Quiz-Modus</h2>
+  <p class="hint">
+    🎯 Objetivo: repasar <strong>vocabulario, gramática y frases</strong> con juegos rápidos (nivel A2).  
+    Lee las instrucciones en <strong>español</strong> y responde en <strong>alemán</strong>.  
+    Funciona en celular, tablet y computador. Las <span class="gloss" data-term="palabras difíciles">palabras difíciles</span> están subrayadas: tócala para ver su significado en español.
+  </p>
+
+  <div class="quiz-tabs" role="tablist">
+    <button class="quiz-tab active" id="tab-trivia" type="button"><i class="fa-solid fa-bolt"></i> Trivia (Tiempo)</button>
+    <button class="quiz-tab" id="tab-vf" type="button"><i class="fa-solid fa-check-double"></i> Wahr/Falsch</button>
+    <button class="quiz-tab" id="tab-elim" type="button"><i class="fa-solid fa-filter-circle-xmark"></i> Eliminación</button>
+  </div>
+
+  <!-- A) TRIVIA CON TIEMPO -->
+  <div id="panel-trivia" class="quiz-card" role="tabpanel" aria-labelledby="tab-trivia">
+    <div class="title-row">
+      <i class="fa-solid fa-hourglass-half"></i>
+      <strong>Trivia de opción múltiple</strong>
+      <span class="muted" id="trivia-progress">1 / 10</span>
+    </div>
+    <p class="muted">⏱️ Tienes <strong>15 segundos</strong> por pregunta. Si se acaba el tiempo, pasas a la siguiente.</p>
+
+    <div class="timer-row">
+      <span class="timer" id="trivia-time">15</span>
+      <div class="bar"><span id="trivia-bar"></span></div>
     </div>
 
-    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
-  </section>
+    <div id="trivia-q" style="margin:.8rem 0 .4rem;"></div>
+    <ul id="trivia-opts" class="opts"></ul>
+    <p id="trivia-fb"></p>
+
+    <div class="controls">
+      <button class="btn-submit" id="trivia-submit" type="button">Responder</button>
+      <button class="btn-ghost" id="trivia-next" type="button">Siguiente ⟶</button>
+      <button class="btn-ghost" id="trivia-reset" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+      <span id="trivia-score" class="score"></span>
+    </div>
+  </div>
+
+  <!-- B) VERDADERO / FALSO -->
+  <div id="panel-vf" class="quiz-card" role="tabpanel" aria-labelledby="tab-vf" style="display:none;">
+    <div class="title-row">
+      <i class="fa-solid fa-list-ol"></i>
+      <strong>Wahr / Falsch (aleatorio)</strong>
+      <span class="muted" id="vf-progress">1 / 10</span>
+    </div>
+    <div id="vf-statement" style="margin:.6rem 0 .4rem;"></div>
+    <ul class="opts">
+      <li><label><input type="radio" name="vfAns" value="true"> Wahr</label></li>
+      <li><label><input type="radio" name="vfAns" value="false"> Falsch</label></li>
+    </ul>
+    <p id="vf-fb"></p>
+    <div class="controls">
+      <button class="btn-submit" id="vf-submit" type="button">Responder</button>
+      <button class="btn-ghost" id="vf-next" type="button">Siguiente ⟶</button>
+      <button class="btn-ghost" id="vf-reset" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+      <span id="vf-score" class="score"></span>
+    </div>
+  </div>
+
+  <!-- C) ELIMINACIÓN PROGRESIVA -->
+  <div id="panel-elim" class="quiz-card" role="tabpanel" aria-labelledby="tab-elim" style="display:none;">
+    <div class="title-row">
+      <i class="fa-solid fa-stairs"></i>
+      <strong>Eliminación progresiva</strong>
+      <span class="muted" id="elim-progress">1 / 10</span>
+    </div>
+    <p class="muted">Si fallas, la opción se <strong>elimina</strong>. Avanzas al siguiente ítem cuando aciertas.</p>
+
+    <div class="elim-prompt" id="elim-prompt"></div>
+    <div class="elim-opts" id="elim-opts"></div>
+    <p class="elim-hint" id="elim-hint"></p>
+    <p id="elim-fb"></p>
+
+    <div class="controls">
+      <button class="btn-ghost" id="elim-reset" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+      <span id="elim-score" class="score"></span>
+    </div>
+  </div>
+
+  <span class="back-btn" onclick="mostrarSeccion('home')">Volver al inicio</span>
+
+  <!-- Modal de glosario (único para esta sección) -->
+  <div id="gloss-modal-quiz" class="modal-quiz hidden" role="dialog" aria-modal="true" aria-labelledby="gloss-term-quiz" aria-describedby="gloss-def-quiz">
+    <div class="modal-box">
+      <button id="gloss-close-quiz" class="modal-close" aria-label="Cerrar">×</button>
+      <h4 id="gloss-term-quiz">Término</h4>
+      <p id="gloss-def-quiz">Definición en español</p>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    /* ========= Glosario (palabras difíciles) ========= */
+    const GLOSS = {
+      "Verspätung":"retraso, demora.",
+      "Haltestelle":"parada (de bus).",
+      "Erdgeschoss":"planta baja.",
+      "Gleis":"andén/vía (del tren).",
+      "Angebot":"oferta/promoción.",
+      "außer Betrieb":"fuera de servicio.",
+      "Eintritt":"entrada/costo de entrada.",
+      "Bluetooth":"conexión inalámbrica Bluetooth."
+    };
+    const byId = id => document.getElementById(id);
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function highlightGloss(text){
+      const keys = Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+      let out = text;
+      keys.forEach(k=>{
+        const rx = new RegExp(`\\b${escapeRegExp(k)}\\b`,'g');
+        out = out.replace(rx, `<span class="gloss" data-term="${k}">${k}</span>`);
+      });
+      return out;
+    }
+    function attachGlossHandlers(scope){
+      scope.querySelectorAll('.gloss').forEach(el=>{
+        el.addEventListener('click', ()=> showGloss(el.dataset.term));
+      });
+    }
+    function showGloss(term){
+      const modal = byId('gloss-modal-quiz');
+      byId('gloss-term-quiz').textContent = term;
+      byId('gloss-def-quiz').textContent = GLOSS[term] || 'Sin definición registrada.';
+      modal.classList.remove('hidden');
+    }
+    byId('gloss-close-quiz').addEventListener('click', ()=> byId('gloss-modal-quiz').classList.add('hidden'));
+
+    /* ========= Banco A) Trivia (10) ========= */
+    const TRIVIA = [
+      {q:"Wie viel kostet das Ticket? – Es kostet ___ Euro.", opts:["fünf","fünfen","fünfer"], ans:0},
+      {q:"Morgen ___ wir keine Schule.", opts:["haben","ist","sind"], ans:0},
+      {q:"Ich gehe heute ___ Kino.", opts:["im","ins","in der"], ans:1},
+      {q:"Er ___ jeden Tag um 6 Uhr auf.", opts:["steht","stehen","stehst"], ans:0},
+      {q:"Wir fahren am Wochenende ___ Berlin.", opts:["nach","in","zu"], ans:0},
+      {q:"Ich nehme ___ Apfel und ein Wasser.", opts:["der","den","dem"], ans:1},
+      {q:"Gestern ___ es sehr kalt.", opts:["ist","war","waren"], ans:1},
+      {q:"Das ist die Tasche ___ Schwester.", opts:["meines","meiner","meinem"], ans:1},
+      {q:"Ich warte ___ den Bus.", opts:["auf","an","mit"], ans:0},
+      {q:"Entschuldigung, wo ist ___ Toilette?", opts:["der","die","das"], ans:1}
+    ];
+
+    /* ========= Banco B) Wahr/Falsch (10) ========= */
+    const VF = [
+      {t:"“Ich habe Hunger.” bedeutet: Ich möchte essen.", key:true},
+      {t:"“Der Zug hat Verspätung.” bedeutet: Der Zug kommt früher.", key:false},
+      {t:"“Die Haltestelle ist da vorne.” bedeutet: Der Bus hält in der Nähe.", key:true},
+      {t:"“Ich gehe zu Fuß.” bedeutet: Ich fahre mit dem Auto.", key:false},
+      {t:"“Ich hätte gern ein Wasser.” ist eine höfliche Bestellung.", key:true},
+      {t:"“Der Aufzug ist außer Betrieb.” bedeutet: Der Aufzug funktioniert.", key:false},
+      {t:"“Ich bin krank.” bedeutet: Ich fühle mich nicht gut.", key:true},
+      {t:"“Heute fällt der Unterricht aus.” bedeutet: Kein Unterricht heute.", key:true},
+      {t:"“Die Kasse ist geschlossen.” bedeutet: Man kann dort bezahlen.", key:false},
+      {t:"“Ich wohne im zweiten Stock.” bedeutet: Ich wohne im Erdgeschoss.", key:false}
+    ];
+
+    /* ========= Banco C) Eliminación (10) ========= */
+    const ELIM = [
+      {p:"Welche Präposition passt? – Ich warte ___ den Bus.", opts:["auf","an","mit","bei"], ans:0, hint:"'auf + Akk.' con 'warten'."},
+      {p:"Welcher Artikel ist richtig? – Ich suche ___ Bäckerei.", opts:["die","der","das","den"], ans:0, hint:"'die Bäckerei' (femenino)."},
+      {p:"Welche Form ist richtig? – Er ___ heute zu Hause.", opts:["ist","sind","war","habe"], ans:0, hint:"3. Persona singular: 'ist'."},
+      {p:"Wohin-Präposition (Bewegung)? – Wir gehen ___ Park.", opts:["in den","im","an dem","beim"], ans:0, hint:"Dirección → 'in den' + Akk."},
+      {p:"Perfekt mit “haben/sein”? – Sie ___ gestern spät angekommen.", opts:["ist","hat","war","hatte"], ans:0, hint:"'ankommen' usa 'sein'."},
+      {p:"Trennbares Verb (Gegenwart): – Ich ___ um 7 Uhr ___. (aufstehen)", opts:["stehe … auf","aufstehe","steht … auf","stand … auf"], ans:0, hint:"Presente: 'ich stehe … auf'."},
+      {p:"Artikel im Akkusativ: – Ich nehme ___ Kaffee.", opts:["einen","ein","einem","des"], ans:0, hint:"Akkusativ masculino: 'einen'."},
+      {p:"Zeitangabe im Satz: – ___ Nachmittag habe ich Training.", opts:["Am","Im","An","Für"], ans:0, hint:"Expresión fija: 'Am Nachmittag'."},
+      {p:"Präposition Ort (Lage): – Die Jacke hängt ___ der Tür.", opts:["an","auf","unter","über"], ans:0, hint:"Colgado en superficie vertical: 'an'."},
+      {p:"Korrekte Verbform: – Wir ___ morgen einen Test.", opts:["haben","hat","seid","waren"], ans:0, hint:"1ª persona plural: 'wir haben'."}
+    ];
+
+    /* ========= Tabs ========= */
+    const tabTrivia = byId('tab-trivia'), tabVF = byId('tab-vf'), tabElim = byId('tab-elim');
+    const panelTrivia = byId('panel-trivia'), panelVF = byId('panel-vf'), panelElim = byId('panel-elim');
+    function showPanel(p){
+      [tabTrivia, tabVF, tabElim].forEach(t=>t.classList.remove('active'));
+      [panelTrivia, panelVF, panelElim].forEach(x=>x.style.display='none');
+      if (p==='trivia'){ tabTrivia.classList.add('active'); panelTrivia.style.display='block'; }
+      if (p==='vf'){ tabVF.classList.add('active'); panelVF.style.display='block'; }
+      if (p==='elim'){ tabElim.classList.add('active'); panelElim.style.display='block'; }
+      window.scrollTo({top: (p==='trivia'?panelTrivia: p==='vf'?panelVF:panelElim).getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+    }
+    tabTrivia.addEventListener('click', ()=>showPanel('trivia'));
+    tabVF.addEventListener('click', ()=>showPanel('vf'));
+    tabElim.addEventListener('click', ()=>showPanel('elim'));
+
+    /* ========= A) TRIVIA (con tiempo) ========= */
+    const triviaQ = byId('trivia-q'), triviaOpts = byId('trivia-opts');
+    const triviaSubmit = byId('trivia-submit'), triviaNext = byId('trivia-next'), triviaReset = byId('trivia-reset');
+    const triviaFb = byId('trivia-fb'), triviaScoreEl = byId('trivia-score'), triviaProg = byId('trivia-progress');
+    const tTime = byId('trivia-time'), tBar = byId('trivia-bar');
+
+    let tIndex=0, tScore=0, tOrder=[...TRIVIA.keys()], tTimer=null, tLeft=15;
+
+    function startTimer(){
+      clearInterval(tTimer);
+      tLeft = 15;
+      tTime.textContent = tLeft;
+      tBar.style.width = '100%';
+      tTimer = setInterval(()=>{
+        tLeft--;
+        tTime.textContent = tLeft;
+        tBar.style.width = (tLeft/15*100)+'%';
+        if (tLeft<=0){ clearInterval(tTimer); lockTrivia(); triviaFb.textContent='⏳ Tiempo agotado.'; triviaFb.className='bad'; }
+      }, 1000);
+    }
+    function lockTrivia(disable=true){
+      triviaOpts.querySelectorAll('input[type="radio"]').forEach(r=> r.disabled = disable);
+      triviaSubmit.disabled = disable;
+    }
+    function renderTrivia(){
+      if (tIndex===0){ tScore=0; tOrder = shuffle([...TRIVIA.keys()]); }
+      triviaFb.textContent = '';
+      const q = TRIVIA[tOrder[tIndex]];
+      triviaProg.textContent = (tIndex+1)+' / '+TRIVIA.length;
+      triviaQ.innerHTML = highlightGloss(`<strong>${tIndex+1}.</strong> ${q.q}`);
+      triviaOpts.innerHTML = q.opts.map((o,i)=>(
+        `<li><label><input type="radio" name="tAns" value="${i}"> ${String.fromCharCode(97+i)}) ${highlightGloss(o)}</label></li>`
+      )).join('');
+      attachGlossHandlers(panelTrivia);
+      lockTrivia(false);
+      startTimer();
+      triviaScoreEl.textContent = `Puntaje: ${tScore} / ${TRIVIA.length}`;
+    }
+    triviaSubmit.addEventListener('click', ()=>{
+      const choice = panelTrivia.querySelector('input[name="tAns"]:checked');
+      if(!choice){ triviaFb.textContent='Selecciona una opción.'; triviaFb.className='bad'; return; }
+      clearInterval(tTimer);
+      const q = TRIVIA[tOrder[tIndex]];
+      if (+choice.value===q.ans){ tScore++; triviaFb.textContent='¡Correcto!'; triviaFb.className='ok'; }
+      else { triviaFb.textContent=`Incorrecto. Respuesta: ${String.fromCharCode(97+q.ans)}) ${q.opts[q.ans]}`; triviaFb.className='bad'; }
+      lockTrivia(true);
+      triviaScoreEl.textContent = `Puntaje: ${tScore} / ${TRIVIA.length}`;
+    });
+    triviaNext.addEventListener('click', ()=>{
+      clearInterval(tTimer);
+      tIndex = (tIndex+1) % TRIVIA.length;
+      renderTrivia();
+    });
+    triviaReset.addEventListener('click', ()=>{
+      clearInterval(tTimer);
+      tIndex=0; tScore=0; renderTrivia();
+    });
+
+    /* ========= B) VERDADERO/FALSO ========= */
+    const vfStatement = byId('vf-statement'), vfSubmit = byId('vf-submit'), vfNext = byId('vf-next'), vfReset = byId('vf-reset');
+    const vfFb = byId('vf-fb'), vfScoreEl = byId('vf-score'), vfProg = byId('vf-progress');
+    let vIndex=0, vScore=0, vOrder=[...VF.keys()];
+    function renderVF(){
+      if (vIndex===0){ vScore=0; vOrder = shuffle([...VF.keys()]); }
+      const it = VF[vOrder[vIndex]];
+      vfProg.textContent = (vIndex+1)+' / '+VF.length;
+      vfStatement.innerHTML = highlightGloss(`<strong>${vIndex+1}.</strong> ${it.t}`);
+      // limpiar selección
+      panelVF.querySelectorAll('input[name="vfAns"]').forEach(r=>{ r.checked=false; r.disabled=false; });
+      vfFb.textContent='';
+      attachGlossHandlers(panelVF);
+      vfScoreEl.textContent = `Puntaje: ${vScore} / ${VF.length}`;
+    }
+    vfSubmit.addEventListener('click', ()=>{
+      const pick = panelVF.querySelector('input[name="vfAns"]:checked');
+      if(!pick){ vfFb.textContent='Selecciona una opción.'; vfFb.className='bad'; return; }
+      const it = VF[vOrder[vIndex]];
+      const isTrue = (pick.value==='true');
+      if (isTrue===it.key){ vfFb.textContent='¡Correcto!'; vfFb.className='ok'; vScore++; }
+      else { vfFb.textContent=`Incorrecto. Es ${it.key ? 'Wahr' : 'Falsch'}.`; vfFb.className='bad'; }
+      panelVF.querySelectorAll('input[name="vfAns"]').forEach(r=> r.disabled=true);
+      vfScoreEl.textContent = `Puntaje: ${vScore} / ${VF.length}`;
+    });
+    vfNext.addEventListener('click', ()=>{
+      vIndex = (vIndex+1) % VF.length;
+      renderVF();
+    });
+    vfReset.addEventListener('click', ()=>{ vIndex=0; vScore=0; renderVF(); });
+
+    /* ========= C) ELIMINACIÓN PROGRESIVA ========= */
+    const elimPrompt = byId('elim-prompt'), elimOpts = byId('elim-opts'), elimHint = byId('elim-hint'), elimFb = byId('elim-fb');
+    const elimReset = byId('elim-reset'), elimScoreEl = byId('elim-score'), elimProg = byId('elim-progress');
+    let eIndex=0, eScore=0, eOrder=[...ELIM.keys()];
+    function renderElim(){
+      if (eIndex===0){ eScore=0; eOrder = shuffle([...ELIM.keys()]); }
+      const it = ELIM[eOrder[eIndex]];
+      elimProg.textContent = (eIndex+1)+' / '+ELIM.length;
+      elimPrompt.innerHTML = highlightGloss(`<strong>${eIndex+1}.</strong> ${it.p}`);
+      elimOpts.innerHTML = '';
+      it.opts.forEach((o,i)=>{
+        const btn = document.createElement('button');
+        btn.type='button'; btn.className='elim-btn'; btn.textContent=o;
+        btn.addEventListener('click', ()=>{
+          if (i===it.ans){
+            eScore++;
+            elimFb.textContent = '¡Correcto!'; elimFb.className='ok';
+            // pasar al siguiente ítem automáticamente
+            setTimeout(()=>{ eIndex = (eIndex+1)%ELIM.length; renderElim(); }, 650);
+          } else {
+            btn.disabled = true;
+            elimHint.textContent = it.hint;
+            elimFb.textContent = 'Sigue intentando…'; elimFb.className='bad';
+          }
+          elimScoreEl.textContent = `Puntaje: ${eScore} / ${ELIM.length}`;
+        });
+        elimOpts.appendChild(btn);
+      });
+      elimHint.textContent = ''; elimFb.textContent='';
+      attachGlossHandlers(panelElim);
+      elimScoreEl.textContent = `Puntaje: ${eScore} / ${ELIM.length}`;
+    }
+    elimReset.addEventListener('click', ()=>{ eIndex=0; eScore=0; renderElim(); });
+
+    /* ========= Utilidades ========= */
+    function shuffle(arr){ return arr.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(p=>p[1]); }
+
+    /* ========= Inicialización ========= */
+    // Activar glosario en el párrafo introductorio
+    attachGlossHandlers(document.getElementById('quiz'));
+
+    // Render inicial de cada modo
+    renderTrivia();
+    renderVF();
+    renderElim();
+  })();
+  </script>
+</section>
+
 
   <!-- SIMULATIONSFÜHRUNG EXAMEN -->
   <section id="simulation" class="contenido-oculto">
@@ -2010,6 +2832,7 @@
   </script>
 </body>
 </html>
+
 
 
 
