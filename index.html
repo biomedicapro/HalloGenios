@@ -873,38 +873,622 @@
 </section>
 
 
-  <!-- LESEVERSTEHEN -->
-  <section id="lesen" class="contenido-oculto">
-    <h2>Lesen und Verstehen</h2>
-    <p>Übe dein Textverständnis mit kurzen Nachrichten und Bildern.</p>
+<!-- LESEVERSTEHEN (EXTENDIDO) -->
+<section id="lesen" class="contenido-oculto">
+  <style>
+    /* ===== Estilos locales para Comprensión Lectora ===== */
+    .hint {
+      background: rgba(255,255,255,.85);
+      border-left: 5px solid var(--blue);
+      padding: .9rem 1rem; border-radius: 10px; margin: .6rem 0 1rem;
+      font-size: .95rem;
+    }
+    .lesen-wrap { display:flex; flex-direction:column; gap:1rem; }
+    .tabs { display:flex; gap:.6rem; flex-wrap:wrap; }
+    .tab-btn {
+      border:2px solid var(--blue); background:#fff; color:var(--text);
+      padding:.5rem .8rem; border-radius: 999px; cursor:pointer; font-weight:700;
+    }
+    .tab-btn.active { background: var(--blue); color: #fff; }
+    .card-lesen {
+      background: rgba(255,255,255,.9); border-radius: 12px; padding: 1rem;
+      box-shadow: 0 4px 16px var(--shadow);
+    }
+    .title-row { display:flex; align-items:center; gap:.6rem; margin-bottom:.4rem; }
+    .mini-text { font-size:1rem; line-height:1.55; margin:.4rem 0 .8rem; }
+    .q-block { margin:.6rem 0; }
+    .opts { list-style:none; margin:.3rem 0 0; padding:0; }
+    .opts li { margin:.3rem 0; }
+    .opts label { display:flex; align-items:center; gap:.5rem; cursor:pointer; }
+    .controls { display:flex; flex-wrap:wrap; gap:.6rem; align-items:center; margin-top:.6rem; }
+    .score { font-weight:700; }
+    .ok { color:#1a7f37; }
+    .bad { color:#b1002e; }
+    .muted { opacity:.85; }
 
-    <h3>Mini-Text</h3>
-    <p><em>Liebe Anna, kommst du morgen zum Fußballtraining?</em></p>
-    <p>Um was geht es in dieser Nachricht?</p>
-    <ul>
-      <li><input type="radio" name="lesen1" value="a"> a) Einladung zum Fußballtraining</li>
-      <li><input type="radio" name="lesen1" value="b"> b) Frage nach dem Fußballtraining</li>
-      <li><input type="radio" name="lesen1" value="c"> c) Grüße aus dem Fußballtraining</li>
-    </ul>
-    <button class="btn-submit" onclick="checkMC('lesen1', 'b', 'lesen1-result')">Überprüfen</button>
-    <p id="lesen1-result"></p>
+    /* Modal glosario local (ID único para esta sección) */
+    .modal-lesen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background: rgba(0,0,0,.45); z-index: 9999; }
+    .modal-lesen.hidden { display:none; }
+    .modal-box {
+      background:#fff; border-radius:12px; padding:1rem 1.2rem; width:min(460px, calc(100% - 2rem));
+      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    }
+    .modal-box h4 { margin:0 0 .3rem; color:var(--blue); }
+    .modal-close { float:right; border:none; background:transparent; font-size:1.4rem; cursor:pointer; }
 
-    <h3>Bilder + Text</h3>
-    <p><i class="fa-solid fa-ticket"></i> Der Kinofilm "Abenteuer im Wald" beginnt um 18:30 Uhr.</p>
-    <p>Frage: Wann beginnt der Film?</p>
-    <button class="btn-submit" onclick="alert('18:30 Uhr')">Antwort anzeigen</button>
+    /* Palabras difíciles clicables */
+    .gloss { border-bottom:2px dotted var(--coral); background: rgba(212,90,86,.08); border-radius:6px; padding:0 .2rem; cursor:pointer; }
 
-    <h3>Wahr/Falsch</h3>
-    <p>"Das Abenteuer im Wald ist ein Kinofilm."</p>
-    <ul>
-      <li><input type="radio" name="vf1" value="true"> Wahr</li>
-      <li><input type="radio" name="vf1" value="false"> Falsch</li>
-    </ul>
-    <button class="btn-submit" onclick="checkTrueFalse('vf1', true, 'vf1-result')">Überprüfen</button>
-    <p id="vf1-result"></p>
+    /* Responsivo móvil */
+    @media (max-width:600px){
+      .card-lesen { padding:.9rem; }
+      .opts li { margin:.25rem 0; }
+    }
+  </style>
 
-    <span class="back-btn" onclick="mostrarSeccion('home')">Zurück</span>
-  </section>
+  <h2>Comprensión lectora – Lesen und Verstehen</h2>
+  <p class="hint">
+    📖 En esta sección practicarás con <strong>textos muy cortos</strong> (correos, avisos, mensajes) como en el nivel <strong>A1/A2</strong>.  
+    Lee con calma y responde. Funciona en celular, tablet y computador.  
+    Las <span class="gloss" data-term="palabras difíciles">palabras difíciles</span> aparecen subrayadas: tócalas para ver el significado en español.
+  </p>
+
+  <div class="lesen-wrap">
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" id="tab-mini" type="button"><i class="fa-solid fa-envelope-open-text"></i> Mini-textos</button>
+      <button class="tab-btn" id="tab-vf" type="button"><i class="fa-solid fa-check-double"></i> Verdadero/Falso</button>
+    </div>
+
+    <!-- MINI-TEXTOS -->
+    <div id="mini-panel" class="card-lesen" role="tabpanel" aria-labelledby="tab-mini">
+      <div class="title-row">
+        <i id="mini-icon" class="fa-solid fa-envelope"></i>
+        <strong id="mini-tipo">[Correo escolar]</strong>
+        <span class="muted" id="mini-progress">1 / 15</span>
+      </div>
+      <div id="mini-text" class="mini-text"></div>
+      <div class="q-block">
+        <div id="mini-q1" class="mc-row"></div>
+        <ul id="mini-opts1" class="opts"></ul>
+        <p id="mini-fb1"></p>
+      </div>
+      <div class="q-block">
+        <div id="mini-q2" class="mc-row"></div>
+        <ul id="mini-opts2" class="opts"></ul>
+        <p id="mini-fb2"></p>
+      </div>
+      <div class="controls">
+        <button class="btn-submit" id="mini-check" type="button">Comprobar</button>
+        <button class="btn-ghost" id="mini-prev" type="button">⟵ Anterior</button>
+        <button class="btn-ghost" id="mini-next" type="button">Siguiente ⟶</button>
+        <button class="btn-ghost" id="mini-reset" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+        <span id="mini-score" class="score"></span>
+      </div>
+    </div>
+
+    <!-- VERDADERO/FALSO -->
+    <div id="vf-panel" class="card-lesen" role="tabpanel" aria-labelledby="tab-vf" style="display:none;">
+      <div class="title-row">
+        <i id="vf-icon" class="fa-solid fa-circle-info"></i>
+        <strong id="vf-tipo">[Aviso del edificio]</strong>
+        <span class="muted" id="vf-progress">1 / 15</span>
+      </div>
+      <div id="vf-text" class="mini-text"></div>
+
+      <div class="q-block">
+        <div class="mc-row"><strong>1.</strong> <span id="vf-a1"></span></div>
+        <ul class="opts">
+          <li><label><input type="radio" name="vf1" value="true"> Wahr</label></li>
+          <li><label><input type="radio" name="vf1" value="false"> Falsch</label></li>
+        </ul>
+        <p id="vf-fb1"></p>
+      </div>
+      <div class="q-block">
+        <div class="mc-row"><strong>2.</strong> <span id="vf-a2"></span></div>
+        <ul class="opts">
+          <li><label><input type="radio" name="vf2" value="true"> Wahr</label></li>
+          <li><label><input type="radio" name="vf2" value="false"> Falsch</label></li>
+        </ul>
+        <p id="vf-fb2"></p>
+      </div>
+      <div class="q-block">
+        <div class="mc-row"><strong>3.</strong> <span id="vf-a3"></span></div>
+        <ul class="opts">
+          <li><label><input type="radio" name="vf3" value="true"> Wahr</label></li>
+          <li><label><input type="radio" name="vf3" value="false"> Falsch</label></li>
+        </ul>
+        <p id="vf-fb3"></p>
+      </div>
+
+      <div class="controls">
+        <button class="btn-submit" id="vf-check" type="button">Comprobar</button>
+        <button class="btn-ghost" id="vf-prev" type="button">⟵ Anterior</button>
+        <button class="btn-ghost" id="vf-next" type="button">Siguiente ⟶</button>
+        <button class="btn-ghost" id="vf-reset" type="button"><i class="fa-solid fa-rotate-left"></i> Reiniciar</button>
+        <span id="vf-score" class="score"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de glosario (único para esta sección) -->
+  <div id="gloss-modal-lesen" class="modal-lesen hidden" role="dialog" aria-modal="true" aria-labelledby="gloss-term-lesen" aria-describedby="gloss-def-lesen">
+    <div class="modal-box">
+      <button id="gloss-close-lesen" class="modal-close" aria-label="Cerrar">×</button>
+      <h4 id="gloss-term-lesen">Término</h4>
+      <p id="gloss-def-lesen">Definición en español</p>
+    </div>
+  </div>
+
+  <span class="back-btn" onclick="mostrarSeccion('home')">Volver al inicio</span>
+
+  <script>
+  (function(){
+    /* ========= Glosario (palabras difíciles) ========= */
+    const GLOSS = {
+      "Betreff":"asunto (en un correo).",
+      "Treffpunkt":"punto de encuentro.",
+      "Turnhalle":"gimnasio o coliseo escolar.",
+      "Trinkflasche":"botella de agua.",
+      "Verspätung":"retraso, demora.",
+      "Einlass":"ingreso/entrada permitida.",
+      "Mensa":"comedor escolar/universitario.",
+      "Ausleihe":"préstamo (de libros, etc.).",
+      "Praxis":"consultorio médico.",
+      "Rückgabeautomat":"máquina para devolución (de libros).",
+      "Beratung":"asesoría/atención al público.",
+      "gesperrt":"cerrado/bloqueado.",
+      "Linie":"línea (de bus/metro).",
+      "Ersatzbus":"bus de reemplazo.",
+      "Taschenrechner":"calculadora.",
+      "Notenheft":"cuaderno de partituras.",
+      "verschoben":"aplazado/reprogramado.",
+      "Versicherungskarte":"tarjeta de seguro médico.",
+      "Ausweis":"documento de identidad.",
+      "Schneegefahr":"peligro de nieve.",
+      "Foyer":"vestíbulo/entrada de un edificio.",
+      "Eintritt":"entrada (boleto) / costo de entrada."
+    };
+
+    /* ========= Utilidades ========= */
+    const byId = id => document.getElementById(id);
+    // resalta términos con span.gloss
+    function highlightGloss(text){
+      // Ordenar claves por longitud para evitar solapamientos
+      const keys = Object.keys(GLOSS).sort((a,b)=>b.length-a.length);
+      let out = text;
+      keys.forEach(k=>{
+        const rx = new RegExp(`\\b${escapeRegExp(k)}\\b`,'g');
+        out = out.replace(rx, `<span class="gloss" data-term="${k}">${k}</span>`);
+      });
+      return out;
+    }
+    function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+    function attachGlossHandlers(scope){
+      scope.querySelectorAll('.gloss').forEach(el=>{
+        el.addEventListener('click', ()=> showGloss(el.dataset.term));
+      });
+    }
+    function showGloss(term){
+      const modal = byId('gloss-modal-lesen');
+      byId('gloss-term-lesen').textContent = term;
+      byId('gloss-def-lesen').textContent = GLOSS[term] || 'Sin definición registrada.';
+      modal.classList.remove('hidden');
+    }
+    byId('gloss-close-lesen').addEventListener('click', ()=> byId('gloss-modal-lesen').classList.add('hidden'));
+
+    /* ========= Banco A) Mini-textos (15) ========= */
+    const ICONS = {
+      "Correo escolar": "fa-envelope-open-text",
+      "Mensaje de móvil": "fa-mobile-screen",
+      "Aviso escolar": "fa-school",
+      "Correo de biblioteca": "fa-book",
+      "Mensaje del entrenador": "fa-person-running",
+      "Anuncio de cine": "fa-film",
+      "Nota del profesor": "fa-chalkboard-user",
+      "Correo de excursión": "fa-train-subway",
+      "Aviso del supermercado": "fa-basket-shopping",
+      "Mensaje de consulta médica": "fa-user-doctor",
+      "Correo de biblioteca escolar": "fa-book-open-reader",
+      "Anuncio de transporte": "fa-bus",
+      "Mensaje de clase de música": "fa-music",
+      "Correo de cumpleaños": "fa-cake-candles",
+      "Aviso del tiempo": "fa-cloud-sun-rain"
+    };
+
+    const MINI = [
+      {
+        tipo:"Correo escolar",
+        text:`<strong>Betreff</strong>: Klassenfahrt<br>
+        Liebe Eltern, am Freitag fahren wir um 7:30 Uhr mit dem Bus nach Bremen. <strong>Treffpunkt</strong> ist vor der <strong>Turnhalle</strong>. Bitte geben Sie den Kindern eine <strong>Trinkflasche</strong> und ein Sandwich mit.`,
+        q1:"¿Cuándo es la salida (Abfahrt)?",
+        opts1:["7:00 Uhr","7:30 Uhr","8:00 Uhr"], ans1:1,
+        q2:"¿Dónde es el punto de encuentro (Treffpunkt)?",
+        opts2:["Vor der Turnhalle","Am Lehrerzimmer","Im Klassenzimmer"], ans2:0
+      },
+      {
+        tipo:"Mensaje de móvil",
+        text:`Hi Ben, ich komme heute später. Mein Zug hat 15 Minuten <strong>Verspätung</strong>. Warte bitte vor dem Kino. – Max`,
+        q1:"¿Dónde debe esperar Ben?",
+        opts1:["Vor der Schule","Vor dem Kino","Am Bahnhof"], ans1:1,
+        q2:"¿Cuánto es el retraso?",
+        opts2:["10 Minuten","20 Minuten","15 Minuten"], ans2:2
+      },
+      {
+        tipo:"Aviso escolar",
+        text:`<strong>Mensa</strong>: Heute gibt es vegetarische Pasta und Salat. Das Mittagessen kostet 4,00 €. Wasser ist kostenlos.`,
+        q1:"¿Cuánto cuesta el almuerzo?",
+        opts1:["2,50 €","4,00 €","5,00 €"], ans1:1,
+        q2:"¿Qué es gratuito?",
+        opts2:["Salat","Wasser","Pasta"], ans2:1
+      },
+      {
+        tipo:"Correo de biblioteca",
+        text:`Ihre <strong>Ausleihe</strong>: „Die kleine Hexe“. Bitte bringen Sie das Buch bis Mittwoch zurück. Die Bibliothek ist von 9–17 Uhr geöffnet.`,
+        q1:"¿Hasta cuándo se debe devolver el libro?",
+        opts1:["Donnerstag","Mittwoch","Freitag"], ans1:1,
+        q2:"¿A qué hora abre la biblioteca?",
+        opts2:["9 Uhr","8 Uhr","10 Uhr"], ans2:0
+      },
+      {
+        tipo:"Mensaje del entrenador",
+        text:`Hallo Team, das Training ist heute in der Sporthalle, nicht auf dem Platz. Bitte saubere Turnschuhe mitbringen.`,
+        q1:"¿Dónde es el entrenamiento?",
+        opts1:["Auf dem Platz","In der Sporthalle","Im Park"], ans1:1,
+        q2:"¿Qué deben traer?",
+        opts2:["Fußballschuhe","Saubere Turnschuhe","Jacke"], ans2:1
+      },
+      {
+        tipo:"Anuncio de cine",
+        text:`Film „Sternennacht“: Beginn 18:45 Uhr, Saal 3. Tickets nur online. <strong>Einlass</strong> ab 18:15 Uhr.`,
+        q1:"¿Cuándo empieza la película?",
+        opts1:["18:15 Uhr","19:00 Uhr","18:45 Uhr"], ans1:2,
+        q2:"¿Dónde se compran los tickets?",
+        opts2:["An der Kasse","Online","Im Laden"], ans2:1
+      },
+      {
+        tipo:"Nota del profesor",
+        text:`Morgen schreiben wir einen kurzen Test in Mathematik. Bitte bringt <strong>Taschenrechner</strong> und Lineal mit.`,
+        q1:"¿De qué materia es la prueba?",
+        opts1:["Deutsch","Mathematik","Englisch"], ans1:1,
+        q2:"¿Qué deben traer?",
+        opts2:["Zirkel","Taschenrechner und Lineal","Wörterbuch"], ans2:1
+      },
+      {
+        tipo:"Correo de excursión",
+        text:`Liebe Schüler, wir treffen uns um 9:00 Uhr am Bahnhof. Denkt an eine Fahrkarte und Regenjacke.`,
+        q1:"¿Dónde se encuentran?",
+        opts1:["Vor der Schule","Am Bahnhof","Im Bus"], ans1:1,
+        q2:"¿Qué deben llevar?",
+        opts2:["Sonnenbrille","Fahrkarte und Regenjacke","Badehose"], ans2:1
+      },
+      {
+        tipo:"Aviso del supermercado",
+        text:`Angebot: Äpfel 1,99 €/kg, Bananen 1,49 €/kg. Heute geöffnet bis 21 Uhr.`,
+        q1:"¿Cuánto cuesta 1 kg de bananos?",
+        opts1:["1,49 €","1,99 €","2,49 €"], ans1:0,
+        q2:"¿Hasta qué hora está abierto hoy?",
+        opts2:["20 Uhr","21 Uhr","22 Uhr"], ans2:1
+      },
+      {
+        tipo:"Mensaje de consulta médica",
+        text:`Ihr Termin: Mittwoch, 10:20 Uhr, <strong>Praxis</strong> Dr. Klein, Zimmer 2. Bitte 10 Minuten früher kommen.`,
+        q1:"¿Cuándo es la cita?",
+        opts1:["Dienstag","Mittwoch","Donnerstag"], ans1:1,
+        q2:"¿Qué se debe hacer?",
+        opts2:["Llegar 10 minutos más tarde","Llegar 10 minutos antes","Llegar exactamente 10:20"], ans2:1
+      },
+      {
+        tipo:"Correo de biblioteca escolar",
+        text:`Am Freitag ist Büchertausch in der Schulbibliothek. Bringt bitte un libro leído y lleven uno nuevo.`,
+        q1:"¿Dónde es la actividad?",
+        opts1:["In der Turnhalle","In der Schulbibliothek","Auf dem Schulhof"], ans1:1,
+        q2:"¿Qué deben llevar?",
+        opts2:["Eine Zeitschrift","Ein gelesenes Buch","Ein Heft"], ans2:1
+      },
+      {
+        tipo:"Anuncio de transporte",
+        text:`Wegen Bauarbeiten fährt die <strong>Linie</strong> 5 heute nicht. Nutzen Sie bitte die Linie 3 oder den <strong>Ersatzbus</strong>.`,
+        q1:"¿Qué línea no funciona hoy?",
+        opts1:["Linie 3","Linie 5","Linie 7"], ans1:1,
+        q2:"¿Qué se puede tomar en su lugar?",
+        opts2:["Linie 9","Linie 3 oder Ersatzbus","Taxi"], ans2:1
+      },
+      {
+        tipo:"Mensaje de clase de música",
+        text:`Bitte bringt morgen eure Flöte und das <strong>Notenheft</strong> mit. Wir üben das Lied „Guten Morgen“.`,
+        q1:"¿Qué se va a practicar?",
+        opts1:["Das Lied „Guten Morgen“","Ein neues Gedicht","Ein Theaterstück"], ans1:0,
+        q2:"¿Qué deben traer?",
+        opts2:["Gitarre","Flöte und Notenheft","Kopfhörer"], ans2:1
+      },
+      {
+        tipo:"Correo de cumpleaños",
+        text:`Hallo Lara, yo festejo el sábado a las 16 Uhr en mi casa. Por favor trae algo para beber. – Mia`,
+        q1:"¿A qué hora empieza la fiesta?",
+        opts1:["15 Uhr","16 Uhr","17 Uhr"], ans1:1,
+        q2:"¿Qué debe traer Lara?",
+        opts2:["Kuchen","Etwas zu trinken","Luftballons"], ans2:1
+      },
+      {
+        tipo:"Aviso del tiempo",
+        text:`Wetter heute: Vormittags sonnig, nachmittags Regen. ¡No olvides la chaqueta impermeable!`,
+        q1:"¿Cómo está el clima en la mañana?",
+        opts1:["Sonnig","Windig","Neblig"], ans1:0,
+        q2:"¿Qué se espera en la tarde?",
+        opts2:["Schnee","Regen","Sturm"], ans2:1
+      }
+    ];
+
+    /* ========= Banco B) Verdadero/Falso (15) ========= */
+    const VF = [
+      {
+        tipo:"Aviso del edificio",
+        text:`Wegen Reinigung bleibt die Waschküche am Montag von 9 bis 13 Uhr geschlossen.`,
+        a1:"La lavandería (Waschküche) está cerrada el lunes en la mañana.",
+        a2:"La lavandería abre a las 9 en punto.",
+        a3:"La limpieza dura cuatro horas.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Anuncio escolar",
+        text:`Der Schulhof ist wegen Bauarbeiten <strong>gesperrt</strong>. Der Eingang A bleibt offen.`,
+        a1:"El patio escolar (Schulhof) está abierto.",
+        a2:"Se puede usar la Entrada A.",
+        a3:"Las obras han terminado.",
+        key:[false, true, false]
+      },
+      {
+        tipo:"Nota médica",
+        text:`Die <strong>Praxis</strong> ist heute nur bis 12 Uhr geöffnet. Recetas (Rezepte) desde las 10.`,
+        a1:"El consultorio cierra al mediodía.",
+        a2:"Las recetas se entregan solo desde las 12.",
+        a3:"Se pueden obtener recetas desde las 10.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Biblioteca",
+        text:`<strong>Rückgabeautomat</strong>: abierto 24 horas. <strong>Beratung</strong> solo de 10–18 Uhr.`,
+        a1:"La máquina de devolución está siempre abierta.",
+        a2:"La asesoría es 24 horas.",
+        a3:"La asesoría termina a las 18.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Transporte",
+        text:`El tren a Hamburgo <em>fällt aus</em> (no sale) hoy. Tome el tren de 10:15 a Bremen.`,
+        a1:"El tren a Hamburgo hoy no sale.",
+        a2:"Hay alternativa a las 10:15.",
+        a3:"La alternativa va a Hamburgo.",
+        key:[true, true, false]
+      },
+      {
+        tipo:"Supermercado",
+        text:`Caja 2 está cerrada. Por favor ir a Caja 3.`,
+        a1:"Se puede usar la Caja 2.",
+        a2:"La Caja 3 está abierta.",
+        a3:"Todas las cajas están cerradas.",
+        key:[false, true, false]
+      },
+      {
+        tipo:"Clase de deporte",
+        text:`Hoy deporte al aire libre. Traer una chaqueta.`,
+        a1:"Hoy el deporte es en el coliseo.",
+        a2:"Se recomienda chaqueta.",
+        a3:"La clase se cancela.",
+        key:[false, true, false]
+      },
+      {
+        tipo:"Piscina",
+        text:`Piscina: Día familiar el domingo. Niños no pagan <strong>Eintritt</strong>.`,
+        a1:"El domingo hay día familiar.",
+        a2:"Los niños deben pagar entrada.",
+        a3:"La piscina está cerrada el domingo.",
+        key:[true, false, false]
+      },
+      {
+        tipo:"Restaurante",
+        text:`Menú de almuerzo de 11:30 a 14:30. Bebidas no incluidas.`,
+        a1:"El menú empieza a las 11:30.",
+        a2:"Las bebidas están incluidas.",
+        a3:"El menú termina a las 14:30.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Correo de profesor",
+        text:`La prueba se <strong>verschoben</strong> (aplaza) para el viernes. Repetir el capítulo 3.`,
+        a1:"La prueba es antes.",
+        a2:"Se debe repasar el capítulo 3.",
+        a3:"La prueba es el viernes.",
+        key:[false, true, true]
+      },
+      {
+        tipo:"Médico",
+        text:`Por favor traer su <strong>Versicherungskarte</strong> y su <strong>Ausweis</strong> a la cita.`,
+        a1:"Se necesita la tarjeta del seguro.",
+        a2:"No es necesario documento de identidad.",
+        a3:"Se trata de una cita.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Clima",
+        text:`Mañana <strong>Schneegefahr</strong> (riesgo de nieve). Los buses pueden salir tarde.`,
+        a1:"Puede nevar mañana.",
+        a2:"Los buses saldrán puntuales con seguridad.",
+        a3:"Son posibles retrasos.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Aula",
+        text:`La clase hoy es en el salón 105, no en el 101.`,
+        a1:"La clase es en el 101.",
+        a2:"El salón correcto es 105.",
+        a3:"La clase se cancela.",
+        key:[false, true, false]
+      },
+      {
+        tipo:"Entrega de tareas",
+        text:`Subir la tarea hasta el domingo 20:00 en la plataforma.`,
+        a1:"La entrega es el domingo.",
+        a2:"La hora es 22:00.",
+        a3:"La entrega es en línea.",
+        key:[true, false, true]
+      },
+      {
+        tipo:"Exposición escolar",
+        text:`La exposición “Nuestra ciudad” es el jueves en el <strong>Foyer</strong>. <strong>Eintritt</strong> gratis.`,
+        a1:"La exposición es el jueves.",
+        a2:"La entrada cuesta 5 euros.",
+        a3:"La exposición es en el vestíbulo.",
+        key:[true, false, true]
+      }
+    ];
+
+    /* ========= Estado y elementos ========= */
+    // Tabs
+    const tabMini = byId('tab-mini'), tabVF = byId('tab-vf');
+    const miniPanel = byId('mini-panel'), vfPanel = byId('vf-panel');
+
+    // Mini-textos
+    let miniIdx = 0, miniScore = 0, miniDone = Array(MINI.length).fill(false);
+    const miniIcon = byId('mini-icon'), miniTipo = byId('mini-tipo'), miniProg = byId('mini-progress');
+    const miniText = byId('mini-text');
+    const miniQ1 = byId('mini-q1'), miniOpts1 = byId('mini-opts1'), miniFb1 = byId('mini-fb1');
+    const miniQ2 = byId('mini-q2'), miniOpts2 = byId('mini-opts2'), miniFb2 = byId('mini-fb2');
+    const miniCheck = byId('mini-check'), miniPrev = byId('mini-prev'), miniNext = byId('mini-next'),
+          miniReset = byId('mini-reset'), miniScoreEl = byId('mini-score');
+
+    // Verdadero/Falso
+    let vfIdx = 0, vfScore = 0, vfDone = Array(VF.length).fill(false);
+    const vfIcon = byId('vf-icon'), vfTipo = byId('vf-tipo'), vfProg = byId('vf-progress');
+    const vfText = byId('vf-text');
+    const a1 = byId('vf-a1'), a2 = byId('vf-a2'), a3 = byId('vf-a3');
+    const vfFb1 = byId('vf-fb1'), vfFb2 = byId('vf-fb2'), vfFb3 = byId('vf-fb3');
+    const vfCheck = byId('vf-check'), vfPrev = byId('vf-prev'), vfNext = byId('vf-next'),
+          vfReset = byId('vf-reset'), vfScoreEl = byId('vf-score');
+
+    /* ========= Render Mini-textos ========= */
+    function renderMini(i){
+      const m = MINI[i];
+      // encabezado
+      miniTipo.textContent = `[${m.tipo}]`;
+      miniIcon.className = `fa-solid ${ICONS[m.tipo] || 'fa-file-lines'}`;
+      miniProg.textContent = `${i+1} / ${MINI.length}`;
+      // texto con glosario
+      miniText.innerHTML = highlightGloss(m.text);
+      attachGlossHandlers(miniText);
+
+      // Pregunta 1
+      miniQ1.innerHTML = `<strong>1.</strong> ${m.q1}`;
+      miniOpts1.innerHTML = m.opts1.map((o, idx)=>(
+        `<li><label><input type="radio" name="mini1" value="${idx}"> ${String.fromCharCode(97+idx)}) ${o}</label></li>`
+      )).join('');
+      miniFb1.textContent = '';
+
+      // Pregunta 2
+      miniQ2.innerHTML = `<strong>2.</strong> ${m.q2}`;
+      miniOpts2.innerHTML = m.opts2.map((o, idx)=>(
+        `<li><label><input type="radio" name="mini2" value="${idx}"> ${String.fromCharCode(97+idx)}) ${o}</label></li>`
+      )).join('');
+      miniFb2.textContent = '';
+
+      miniScoreEl.textContent = `Puntaje: ${miniScore} / ${MINI.length*2}`;
+    }
+    function checkMini(){
+      const m = MINI[miniIdx];
+      let add = 0;
+
+      const pick1 = document.querySelector('input[name="mini1"]:checked');
+      if (!pick1){ miniFb1.textContent = 'Elige una opción.'; miniFb1.className='bad'; }
+      else if (+pick1.value === m.ans1){ miniFb1.textContent = '¡Correcto!'; miniFb1.className='ok'; add++; }
+      else { miniFb1.textContent = `Incorrecto. Respuesta: ${String.fromCharCode(97+m.ans1)}) ${m.opts1[m.ans1]}`; miniFb1.className='bad'; }
+
+      const pick2 = document.querySelector('input[name="mini2"]:checked');
+      if (!pick2){ miniFb2.textContent = 'Elige una opción.'; miniFb2.className='bad'; }
+      else if (+pick2.value === m.ans2){ miniFb2.textContent = '¡Correcto!'; miniFb2.className='ok'; add++; }
+      else { miniFb2.textContent = `Incorrecto. Respuesta: ${String.fromCharCode(97+m.ans2)}) ${m.opts2[m.ans2]}`; miniFb2.className='bad'; }
+
+      if (!miniDone[miniIdx]) { miniScore += add; miniDone[miniIdx] = true; }
+      miniScoreEl.textContent = `Puntaje: ${miniScore} / ${MINI.length*2}`;
+    }
+
+    /* ========= Render Verdadero/Falso ========= */
+    function renderVF(i){
+      const v = VF[i];
+      vfTipo.textContent = `[${v.tipo}]`;
+      vfIcon.className = `fa-solid ${ICONS[v.tipo] || 'fa-circle-info'}`;
+      vfProg.textContent = `${i+1} / ${VF.length}`;
+      vfText.innerHTML = highlightGloss(v.text);
+      attachGlossHandlers(vfText);
+      a1.innerHTML = v.a1; a2.innerHTML = v.a2; a3.innerHTML = v.a3;
+      // limpiar selecciones
+      ['vf1','vf2','vf3'].forEach(n => document.querySelectorAll(`input[name="${n}"]`).forEach(r=> r.checked=false));
+      vfFb1.textContent = vfFb2.textContent = vfFb3.textContent = '';
+      vfScoreEl.textContent = `Puntaje: ${vfScore} / ${VF.length*3}`;
+    }
+    function checkVF(){
+      const v = VF[vfIdx];
+      let add = 0;
+      const c1 = document.querySelector('input[name="vf1"]:checked');
+      const c2 = document.querySelector('input[name="vf2"]:checked');
+      const c3 = document.querySelector('input[name="vf3"]:checked');
+
+      if (!c1){ vfFb1.textContent = 'Selecciona una opción.'; vfFb1.className='bad'; }
+      else if ((c1.value==='true') === v.key[0]){ vfFb1.textContent='¡Correcto!'; vfFb1.className='ok'; add++; }
+      else { vfFb1.textContent = `Incorrecto. Es ${v.key[0] ? 'Wahr' : 'Falsch'}.`; vfFb1.className='bad'; }
+
+      if (!c2){ vfFb2.textContent = 'Selecciona una opción.'; vfFb2.className='bad'; }
+      else if ((c2.value==='true') === v.key[1]){ vfFb2.textContent='¡Correcto!'; vfFb2.className='ok'; add++; }
+      else { vfFb2.textContent = `Incorrecto. Es ${v.key[1] ? 'Wahr' : 'Falsch'}.`; vfFb2.className='bad'; }
+
+      if (!c3){ vfFb3.textContent = 'Selecciona una opción.'; vfFb3.className='bad'; }
+      else if ((c3.value==='true') === v.key[2]){ vfFb3.textContent='¡Correcto!'; vfFb3.className='ok'; add++; }
+      else { vfFb3.textContent = `Incorrecto. Es ${v.key[2] ? 'Wahr' : 'Falsch'}.`; vfFb3.className='bad'; }
+
+      if (!vfDone[vfIdx]) { vfScore += add; vfDone[vfIdx] = true; }
+      vfScoreEl.textContent = `Puntaje: ${vfScore} / ${VF.length*3}`;
+    }
+
+    /* ========= Eventos ========= */
+    // Tabs
+    tabMini.addEventListener('click', ()=>{
+      tabMini.classList.add('active'); tabVF.classList.remove('active');
+      miniPanel.style.display='block'; vfPanel.style.display='none';
+      window.scrollTo({top: miniPanel.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+    });
+    tabVF.addEventListener('click', ()=>{
+      tabVF.classList.add('active'); tabMini.classList.remove('active');
+      vfPanel.style.display='block'; miniPanel.style.display='none';
+      window.scrollTo({top: vfPanel.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+    });
+
+    // Mini
+    miniCheck.addEventListener('click', checkMini);
+    miniPrev.addEventListener('click', ()=>{ miniIdx = (miniIdx - 1 + MINI.length) % MINI.length; renderMini(miniIdx); });
+    miniNext.addEventListener('click', ()=>{ miniIdx = (miniIdx + 1) % MINI.length; renderMini(miniIdx); });
+    miniReset.addEventListener('click', ()=>{
+      miniScore = 0; miniDone = Array(MINI.length).fill(false); renderMini(miniIdx=0);
+    });
+
+    // VF
+    vfCheck.addEventListener('click', checkVF);
+    vfPrev.addEventListener('click', ()=>{ vfIdx = (vfIdx - 1 + VF.length) % VF.length; renderVF(vfIdx); });
+    vfNext.addEventListener('click', ()=>{ vfIdx = (vfIdx + 1) % VF.length; renderVF(vfIdx); });
+    vfReset.addEventListener('click', ()=>{
+      vfScore = 0; vfDone = Array(VF.length).fill(false); renderVF(vfIdx=0);
+    });
+
+    /* ========= Inicialización ========= */
+    // Render primeros ítems
+    renderMini(0);
+    renderVF(0);
+
+    // Activar glosario en texto introductorio
+    attachGlossHandlers(document.getElementById('lesen'));
+  })();
+  </script>
+</section>
+
 
   <!-- REDEMITTEL -->
   <section id="redemittel" class="contenido-oculto">
@@ -1154,4 +1738,5 @@
   </script>
 </body>
 </html>
+
 
